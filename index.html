@@ -9,7 +9,7 @@
   :root{--bg:#F5F3EE;--card:#fff;--border:#D3D1C7;--text:#1A1A18;--muted:#888780;--dark:#1A1A18;--light:#EFEFED;--err-bg:#FCEBEB;--err:#A32D2D;}
   body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;}
 
-  /* ── LOGIN ───────────────────────────────────── */
+  /* ── LOGIN ───────────────────────────────────── */h
   #screen-login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;padding:2rem 1.5rem;}
   .login-card{background:var(--card);border:0.5px solid var(--border);border-radius:14px;width:100%;max-width:360px;overflow:hidden;}
   .login-header{background:#1A1A18;padding:28px 24px 20px;text-align:center;}
@@ -211,9 +211,9 @@
 <script>
 // ── Credentials ─────────────────────────────────────────────
 const ROLES = {
-  '083888': { nombre: 'Administrador', apps: ['ot','almacen'] },
-  '672187': { nombre: 'Almacenista',   apps: ['almacen'] },
-  '405705': { nombre: 'Supervisor',    apps: ['ot','almacen'] },
+  '083888': { nombre: 'Administrador', apps: ['ot','almacen','requisicion'] },
+  '672187': { nombre: 'Almacenista',   apps: ['almacen','requisicion'] },
+  '405705': { nombre: 'Supervisor',    apps: ['ot','almacen','requisicion'] },
   '156945': { nombre: 'Invitado',      apps: ['prestamo'] },
 };
 
@@ -242,6 +242,14 @@ const APPS = {
     desc:  'Solicita herramienta del almacen',
     url:   'https://alfredoaguado-arch.github.io/cami-almacen/?modo=prestamo',
     wide:  true,
+  },
+  requisicion: {
+    id:    'requisicion',
+    icon:  '💳',
+    name:  'Requisicion de pago',
+    desc:  'Solicita pagos y transferencias por proyecto',
+    url:   'https://alfredoaguado-arch.github.io/cami-requisicion/',
+    wide:  false,
   },
 
 };
