@@ -104,9 +104,9 @@
 
 <script>
 const ROLES = {
-  '083888': { nombre: 'Administrador', apps: ['ot','almacen','requisicion'] },
+  '083888': { nombre: 'Administrador', apps: ['ot','almacen','requisicion','presupuesto'] },
   '672187': { nombre: 'Almacenista',   apps: ['almacen','requisicion'] },
-  '405705': { nombre: 'Supervisor',    apps: ['ot','almacen','requisicion'] },
+  '405705': { nombre: 'Supervisor',    apps: ['ot','almacen','requisicion','presupuesto'] },
   '156945': { nombre: 'Invitado',      apps: ['prestamo'] },
 };
 
@@ -141,6 +141,14 @@ const APPS = {
     name:  'Requisicion de pago',
     desc:  'Solicita pagos y transferencias por proyecto',
     url:   'https://alfredoaguado-arch.github.io/cami-requisicion/',
+    wide:  false,
+  },
+  presupuesto: {
+    id:    'presupuesto',
+    icon:  '&#128203;',
+    name:  'Presupuesto',
+    desc:  'Genera cotizaciones para el cliente en PDF',
+    url:   'https://alfredoaguado-arch.github.io/cami-presupuesto/',
     wide:  false,
   },
 };
