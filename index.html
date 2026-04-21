@@ -10,61 +10,137 @@
 <meta name="apple-mobile-web-app-title" content="CAMI"/>
 <meta name="theme-color" content="#1A1A18"/>
 <style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#F5F3EE;--card:#fff;--border:#D3D1C7;--text:#1A1A18;--muted:#888780;--dark:#1A1A18;--light:#EFEFED;--err-bg:#FCEBEB;--err:#A32D2D;}
-  body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F5F3EE;--card:#fff;--border:#D3D1C7;--text:#1A1A18;--muted:#888780;--dark:#1A1A18;--light:#EFEFED;--err-bg:#FCEBEB;--err:#A32D2D;}
+body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;}
+.screen{display:none;flex-direction:column;min-height:100vh;min-height:100dvh;}
+.screen.active{display:flex;}
 
-  /* LOGIN */
-  #screen-login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;padding:2rem 1.5rem;}
-  .login-card{background:var(--card);border:0.5px solid var(--border);border-radius:14px;width:100%;max-width:360px;overflow:hidden;}
-  .login-header{background:#1A1A18;padding:28px 24px 20px;text-align:center;}
-  .logo-text{font-size:32px;font-weight:900;color:#fff;letter-spacing:.2em;font-family:'Courier New',monospace;display:block;}
-  .login-header .app-name{font-size:11px;color:#888780;letter-spacing:.12em;text-transform:uppercase;margin-top:6px;display:block;}
-  .login-body{padding:28px 24px;}
-  .login-label{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;display:block;}
-  .pin-display{display:flex;gap:10px;justify-content:center;margin-bottom:24px;}
-  .pin-dot{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg);transition:all .15s;}
-  .pin-dot.filled{background:#1A1A18;border-color:#1A1A18;}
-  .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-  .num-btn{background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:16px 8px;font-size:20px;font-family:'Courier New',monospace;cursor:pointer;transition:all .12s;text-align:center;}
-  .num-btn:active{background:#1A1A18;color:#fff;transform:scale(.96);}
-  .num-btn.del{font-size:14px;color:var(--muted);}
-  .num-btn.empty{visibility:hidden;}
-  .login-error{background:var(--err-bg);color:var(--err);border-radius:6px;padding:10px 14px;font-size:12px;margin-top:16px;text-align:center;display:none;}
-  .login-error.show{display:block;}
-  @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
-  .shake{animation:shake .4s ease;}
+/* ── LOGIN: SELECCIÓN DE USUARIO ── */
+#screen-users{align-items:center;justify-content:center;padding:2rem 1.5rem;}
+.login-card{background:var(--card);border:0.5px solid var(--border);border-radius:14px;width:100%;max-width:360px;overflow:hidden;}
+.login-header{background:#1A1A18;padding:28px 24px 20px;text-align:center;}
+.logo-text{font-size:32px;font-weight:900;color:#fff;letter-spacing:.2em;font-family:'Courier New',monospace;display:block;}
+.login-header .app-name{font-size:11px;color:#888780;letter-spacing:.12em;text-transform:uppercase;margin-top:6px;display:block;}
+.login-body{padding:24px;}
+.login-label{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;display:block;}
+.user-list{display:flex;flex-direction:column;gap:8px;}
+.user-btn{background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:14px 16px;font-family:'Courier New',monospace;font-size:14px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;transition:all .12s;color:var(--text);}
+.user-btn:active{background:#1A1A18;color:#fff;transform:scale(.97);}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:#1A1A18;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.user-btn:active .user-avatar{background:#fff;color:#1A1A18;}
+.user-role{font-size:10px;color:var(--muted);font-weight:400;margin-top:2px;}
 
-  /* HOME */
-  #screen-home{display:none;flex-direction:column;min-height:100vh;min-height:100dvh;}
-  .topbar{background:#1A1A18;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
-  .topbar .logo-text{font-size:22px;letter-spacing:.15em;}
-  .topbar-right{text-align:right;}
-  .topbar-user{font-size:11px;color:#888780;letter-spacing:.06em;text-transform:uppercase;}
-  .topbar-role{font-size:13px;font-weight:700;color:#fff;margin-top:2px;}
-  .home-body{padding:20px 16px;flex:1;}
-  .home-greeting{font-size:13px;color:var(--muted);margin-bottom:20px;letter-spacing:.04em;}
-  .apps-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  .app-card{background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:18px 16px;cursor:pointer;transition:all .15s;text-decoration:none;color:var(--text);display:block;}
-  .app-card:active{transform:scale(.97);background:var(--light);}
-  .app-card.wide{grid-column:1/-1;}
-  .app-icon{font-size:24px;margin-bottom:10px;display:block;}
-  .app-name{font-size:13px;font-weight:700;letter-spacing:.04em;margin-bottom:4px;}
-  .app-desc{font-size:11px;color:var(--muted);line-height:1.5;}
-  .logout-btn{margin:16px;padding:14px;background:none;border:0.5px solid var(--border);border-radius:8px;font-family:'Courier New',monospace;font-size:13px;color:var(--muted);cursor:pointer;width:calc(100% - 32px);letter-spacing:.04em;}
-  .logout-btn:active{background:var(--light);}
+/* ── LOGIN: PIN ── */
+#screen-pin{align-items:center;justify-content:center;padding:2rem 1.5rem;}
+.pin-back{background:none;border:none;font-family:'Courier New',monospace;font-size:11px;color:var(--muted);cursor:pointer;letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px;align-self:flex-start;padding:4px 0;}
+.pin-back:hover{color:var(--text);}
+.pin-user-name{font-size:18px;font-weight:700;margin-bottom:4px;}
+.pin-display{display:flex;gap:10px;justify-content:center;margin-bottom:24px;}
+.pin-dot{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg);transition:all .15s;}
+.pin-dot.filled{background:#1A1A18;border-color:#1A1A18;}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.num-btn{background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:16px 8px;font-size:20px;font-family:'Courier New',monospace;cursor:pointer;transition:all .12s;text-align:center;}
+.num-btn:active{background:#1A1A18;color:#fff;transform:scale(.96);}
+.num-btn.del{font-size:14px;color:var(--muted);}
+.num-btn.empty{visibility:hidden;}
+.login-error{background:var(--err-bg);color:var(--err);border-radius:6px;padding:10px 14px;font-size:12px;margin-top:16px;text-align:center;display:none;}
+.login-error.show{display:block;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.shake{animation:shake .4s ease;}
+
+/* ── HOME ── */
+#screen-home{flex-direction:column;}
+.topbar{background:#1A1A18;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
+.topbar .logo-text{font-size:22px;letter-spacing:.15em;}
+.topbar-right{text-align:right;}
+.topbar-user{font-size:11px;color:#888780;letter-spacing:.06em;text-transform:uppercase;}
+.topbar-role{font-size:13px;font-weight:700;color:#fff;margin-top:2px;}
+.home-body{padding:20px 16px;flex:1;}
+.home-greeting{font-size:13px;color:var(--muted);margin-bottom:20px;letter-spacing:.04em;}
+.apps-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.app-card{background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:18px 16px;cursor:pointer;transition:all .15s;text-decoration:none;color:var(--text);display:block;}
+.app-card:active{transform:scale(.97);background:var(--light);}
+.app-card.wide{grid-column:1/-1;}
+.app-icon{font-size:24px;margin-bottom:10px;display:block;}
+.app-name{font-size:13px;font-weight:700;letter-spacing:.04em;margin-bottom:4px;}
+.app-desc{font-size:11px;color:var(--muted);line-height:1.5;}
+.home-actions{display:flex;gap:10px;margin:0 16px 16px;}
+.logout-btn{flex:1;padding:14px;background:none;border:0.5px solid var(--border);border-radius:8px;font-family:'Courier New',monospace;font-size:13px;color:var(--muted);cursor:pointer;letter-spacing:.04em;}
+.logout-btn:active{background:var(--light);}
+.admin-btn{padding:14px 18px;background:#1A1A18;border:none;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;color:#fff;cursor:pointer;letter-spacing:.04em;}
+.admin-btn:active{background:#333;}
+
+/* ── ADMIN PANEL ── */
+#screen-admin{flex-direction:column;}
+.admin-topbar{background:#1A1A18;padding:16px 20px;display:flex;align-items:center;gap:12px;}
+.admin-back{background:none;border:none;color:#888780;font-size:18px;cursor:pointer;padding:0;line-height:1;}
+.admin-title{font-size:16px;font-weight:700;color:#fff;letter-spacing:.08em;}
+.admin-body{padding:16px;flex:1;overflow-y:auto;}
+.admin-section-title{font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+.add-user-btn{background:#1A1A18;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-family:'Courier New',monospace;font-size:11px;cursor:pointer;letter-spacing:.04em;}
+.user-card{background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+.user-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.user-card-name{font-size:14px;font-weight:700;}
+.user-card-role{font-size:10px;color:var(--muted);margin-top:2px;}
+.user-card-actions{display:flex;gap:8px;}
+.btn-edit,.btn-del{background:none;border:0.5px solid var(--border);border-radius:6px;padding:5px 10px;font-family:'Courier New',monospace;font-size:11px;cursor:pointer;}
+.btn-del{color:var(--err);border-color:#F7C1C1;}
+.btn-edit:active{background:var(--light);}
+.btn-del:active{background:var(--err-bg);}
+.user-apps-row{display:flex;flex-wrap:wrap;gap:6px;}
+.app-tag{font-size:10px;background:var(--light);border:0.5px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--muted);letter-spacing:.04em;}
+
+/* ── MODAL USUARIO ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--card);border-radius:14px;width:100%;max-width:340px;overflow:hidden;}
+.modal-header{background:#1A1A18;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;}
+.modal-title{font-size:14px;font-weight:700;color:#fff;letter-spacing:.06em;}
+.modal-close{background:none;border:none;color:#888780;font-size:20px;cursor:pointer;line-height:1;}
+.modal-body{padding:20px;}
+.field{margin-bottom:16px;}
+.field label{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:6px;}
+.field input{width:100%;padding:10px 12px;border:0.5px solid var(--border);border-radius:6px;font-family:'Courier New',monospace;font-size:14px;background:var(--bg);color:var(--text);outline:none;}
+.field input:focus{border-color:var(--text);}
+.apps-checkboxes{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.app-check{display:flex;align-items:center;gap:8px;background:var(--bg);border:0.5px solid var(--border);border-radius:6px;padding:8px 10px;cursor:pointer;}
+.app-check input[type=checkbox]{accent-color:#1A1A18;width:14px;height:14px;cursor:pointer;}
+.app-check label{font-size:11px;font-family:'Courier New',monospace;cursor:pointer;letter-spacing:.04em;}
+.modal-footer{padding:16px 20px;border-top:0.5px solid var(--border);display:flex;gap:10px;}
+.btn-cancel{flex:1;padding:12px;background:none;border:0.5px solid var(--border);border-radius:8px;font-family:'Courier New',monospace;font-size:13px;cursor:pointer;color:var(--muted);}
+.btn-save{flex:2;padding:12px;background:#1A1A18;border:none;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;color:#fff;cursor:pointer;font-weight:700;}
+.btn-save:active{background:#333;}
+.modal-error{background:var(--err-bg);color:var(--err);border-radius:6px;padding:8px 12px;font-size:11px;margin-bottom:12px;display:none;}
+.modal-error.show{display:block;}
 </style>
 </head>
 <body>
 
-<div id="screen-login">
+<!-- PANTALLA 1: SELECCIÓN DE USUARIO -->
+<div id="screen-users" class="screen active">
   <div class="login-card">
     <div class="login-header">
       <span class="logo-text">CAMI</span>
       <span class="app-name">Sistema de Control</span>
     </div>
     <div class="login-body">
-      <span class="login-label">Ingresa tu PIN de acceso</span>
+      <span class="login-label">Selecciona tu usuario</span>
+      <div class="user-list" id="user-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PANTALLA 2: PIN -->
+<div id="screen-pin" class="screen">
+  <button class="pin-back" onclick="backToUsers()">&#8592; Cambiar usuario</button>
+  <div class="login-card">
+    <div class="login-header">
+      <span class="logo-text">CAMI</span>
+      <div class="pin-user-name" id="pin-user-name" style="color:#fff;margin-top:8px;font-size:16px;"></div>
+    </div>
+    <div class="login-body">
+      <span class="login-label">Ingresa tu PIN</span>
       <div class="pin-display" id="pin-display">
         <div class="pin-dot" id="dot-0"></div>
         <div class="pin-dot" id="dot-1"></div>
@@ -73,7 +149,7 @@
         <div class="pin-dot" id="dot-4"></div>
         <div class="pin-dot" id="dot-5"></div>
       </div>
-      <div class="numpad" id="numpad">
+      <div class="numpad">
         <button class="num-btn" onclick="addDigit('1')">1</button>
         <button class="num-btn" onclick="addDigit('2')">2</button>
         <button class="num-btn" onclick="addDigit('3')">3</button>
@@ -92,7 +168,8 @@
   </div>
 </div>
 
-<div id="screen-home">
+<!-- PANTALLA 3: HOME -->
+<div id="screen-home" class="screen">
   <div class="topbar">
     <span class="logo-text">CAMI</span>
     <div class="topbar-right">
@@ -104,121 +181,169 @@
     <div class="home-greeting" id="home-greeting">Selecciona un modulo</div>
     <div class="apps-grid" id="apps-grid"></div>
   </div>
-  <button class="logout-btn" onclick="logout()">Cerrar sesion</button>
+  <div class="home-actions">
+    <button class="logout-btn" onclick="logout()">Cerrar sesion</button>
+    <button class="admin-btn" id="admin-btn" onclick="showAdmin()" style="display:none">&#9881; Admin</button>
+  </div>
+</div>
+
+<!-- PANTALLA 4: ADMIN PANEL -->
+<div id="screen-admin" class="screen">
+  <div class="admin-topbar">
+    <button class="admin-back" onclick="closeAdmin()">&#8592;</button>
+    <span class="admin-title">PANEL DE ADMINISTRADOR</span>
+  </div>
+  <div class="admin-body">
+    <div class="admin-section-title">
+      <span>USUARIOS DEL SISTEMA</span>
+      <button class="add-user-btn" onclick="openModal()">+ Nuevo usuario</button>
+    </div>
+    <div id="users-list"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">NUEVO USUARIO</span>
+      <button class="modal-close" onclick="closeModal()">&#215;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-error" id="modal-error"></div>
+      <div class="field"><label>Nombre completo</label><input type="text" id="f-nombre" placeholder="Ej: Juan Garcia" autocomplete="off"/></div>
+      <div class="field"><label>PIN (6 digitos)</label><input type="password" id="f-pin" placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;" maxlength="6" inputmode="numeric" autocomplete="off"/></div>
+      <div class="field"><label>Rol</label><select id="f-rol" style="width:100%;padding:10px 12px;border:0.5px solid var(--border);border-radius:6px;font-family:'Courier New',monospace;font-size:13px;background:var(--bg);color:var(--text);outline:none;"><option value="Administrador">Administrador</option><option value="Supervisor">Supervisor</option><option value="Almacenista">Almacenista</option><option value="Invitado">Invitado</option></select></div>
+      <div class="field"><label>Acceso a modulos</label><div class="apps-checkboxes" id="apps-checkboxes"></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveUser()">Guardar</button>
+    </div>
+  </div>
 </div>
 
 <script>
-const ROLES = {
-  '083888': { nombre: 'Administrador', apps: ['ot','almacen','requisicion','presupuesto'] },
-  '672187': { nombre: 'Almacenista',   apps: ['almacen','requisicion'] },
-  '405705': { nombre: 'Supervisor',    apps: ['ot','almacen','requisicion','presupuesto'] },
-  '156945': { nombre: 'Invitado',      apps: ['prestamo'] },
-};
-
 const APPS = {
-  ot: {
-    id:    'ot',
-    icon:  '&#127981;',
-    name:  'Ordenes de Trabajo',
-    desc:  'Registro y seguimiento de OT por proyecto',
-    url:   'https://alfredoaguado-arch.github.io/cami-ot/',
-    wide:  false,
-  },
-  almacen: {
-    id:    'almacen',
-    icon:  '&#128230;',
-    name:  'Almacen',
-    desc:  'Materiales, herramienta y consumibles',
-    url:   'https://alfredoaguado-arch.github.io/cami-almacen/',
-    wide:  false,
-  },
-  prestamo: {
-    id:    'prestamo',
-    icon:  '&#128295;',
-    name:  'Prestamo de herramienta',
-    desc:  'Solicita herramienta del almacen',
-    url:   'https://alfredoaguado-arch.github.io/cami-almacen/?modo=prestamo',
-    wide:  true,
-  },
-  requisicion: {
-    id:    'requisicion',
-    icon:  '&#128179;',
-    name:  'Requisicion de pago',
-    desc:  'Solicita pagos y transferencias por proyecto',
-    url:   'https://alfredoaguado-arch.github.io/cami-requisicion/',
-    wide:  false,
-  },
-  presupuesto: {
-    id:    'presupuesto',
-    icon:  '&#128203;',
-    name:  'Presupuesto',
-    desc:  'Genera cotizaciones para el cliente en PDF',
-    url:   'https://alfredoaguado-arch.github.io/cami-presupuesto/',
-    wide:  false,
-  },
+  ot:          { icon:'&#127981;', name:'Ordenes de Trabajo',    desc:'Registro y seguimiento de OT', url:'https://alfredoaguado-arch.github.io/cami-ot/', wide:false },
+  almacen:     { icon:'&#128230;', name:'Almacen',               desc:'Materiales, herramienta y consumibles', url:'https://alfredoaguado-arch.github.io/cami-almacen/', wide:false },
+  prestamo:    { icon:'&#128295;', name:'Prestamo herramienta',  desc:'Solicita herramienta del almacen', url:'https://alfredoaguado-arch.github.io/cami-almacen/?modo=prestamo', wide:true },
+  requisicion: { icon:'&#128179;', name:'Requisicion de pago',   desc:'Solicita pagos y transferencias', url:'https://alfredoaguado-arch.github.io/cami-requisicion/', wide:false },
+  presupuesto: { icon:'&#128203;', name:'Presupuesto',           desc:'Genera cotizaciones en PDF', url:'https://alfredoaguado-arch.github.io/cami-presupuesto/', wide:false },
 };
-
-let pin = '';
-
-function updateDots() {
-  for (let i = 0; i < 6; i++) {
-    document.getElementById('dot-' + i).classList.toggle('filled', i < pin.length);
+const DEFAULT_USERS = [
+  { id:'u1', nombre:'Administrador', rol:'Administrador', pin:'263656', apps:['ot','almacen','requisicion','presupuesto'] },
+  { id:'u2', nombre:'Supervisor',    rol:'Supervisor',    pin:'405705', apps:['ot','almacen','requisicion','presupuesto'] },
+  { id:'u3', nombre:'Almacenista',   rol:'Almacenista',   pin:'672187', apps:['almacen','requisicion'] },
+  { id:'u4', nombre:'Invitado',      rol:'Invitado',      pin:'156945', apps:['prestamo'] },
+];
+let users = [], currentUser = null, pin = '', editingId = null;
+function loadUsers(){
+  try{ const s=localStorage.getItem('cami_users'); users=s?JSON.parse(s):DEFAULT_USERS; }
+  catch(e){ users=DEFAULT_USERS; }
+}
+function saveUsers(){ localStorage.setItem('cami_users',JSON.stringify(users)); }
+function renderUserList(){
+  const list=document.getElementById('user-list'); list.innerHTML='';
+  users.forEach(u=>{
+    const btn=document.createElement('button'); btn.className='user-btn';
+    const ini=u.nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    btn.innerHTML='<div class="user-avatar">'+ini+'</div><div><div>'+u.nombre+'</div><div class="user-role">'+u.rol+'</div></div>';
+    btn.onclick=()=>selectUser(u); list.appendChild(btn);
+  });
+}
+function selectUser(u){
+  currentUser=u; pin='';
+  document.getElementById('pin-user-name').textContent=u.nombre;
+  updateDots(); document.getElementById('login-error').classList.remove('show');
+  showScreen('screen-pin');
+}
+function backToUsers(){ currentUser=null; pin=''; showScreen('screen-users'); }
+function updateDots(){ for(let i=0;i<6;i++) document.getElementById('dot-'+i).classList.toggle('filled',i<pin.length); }
+function addDigit(d){ if(pin.length>=6)return; pin+=d; updateDots(); if(pin.length===6)setTimeout(tryLogin,150); }
+function delDigit(){ pin=pin.slice(0,-1); updateDots(); document.getElementById('login-error').classList.remove('show'); }
+function tryLogin(){
+  if(!currentUser||pin!==currentUser.pin){
+    const card=document.querySelector('#screen-pin .login-card');
+    card.classList.add('shake'); setTimeout(()=>card.classList.remove('shake'),400);
+    document.getElementById('login-error').classList.add('show'); pin=''; updateDots(); return;
   }
-}
-
-function addDigit(d) {
-  if (pin.length >= 6) return;
-  pin += d;
-  updateDots();
-  if (pin.length === 6) setTimeout(tryLogin, 150);
-}
-
-function delDigit() {
-  pin = pin.slice(0, -1);
-  updateDots();
-  document.getElementById('login-error').classList.remove('show');
-}
-
-function tryLogin() {
-  const role = ROLES[pin];
-  if (!role) {
-    const card = document.querySelector('.login-card');
-    card.classList.add('shake');
-    setTimeout(() => card.classList.remove('shake'), 400);
-    document.getElementById('login-error').classList.add('show');
-    pin = '';
-    updateDots();
-    return;
-  }
-  document.getElementById('topbar-user').textContent = role.nombre;
-  document.getElementById('topbar-role').textContent = role.nombre;
-  document.getElementById('home-greeting').textContent = 'Bienvenido, ' + role.nombre;
-  const grid = document.getElementById('apps-grid');
-  grid.innerHTML = '';
-  role.apps.forEach(appId => {
-    const app = APPS[appId];
-    if (!app) return;
-    const a = document.createElement('a');
-    a.href = app.url;
-    a.className = 'app-card' + (app.wide ? ' wide' : '');
-    a.innerHTML = '<span class="app-icon">' + app.icon + '</span>' +
-                  '<div class="app-name">' + app.name + '</div>' +
-                  '<div class="app-desc">' + app.desc + '</div>';
+  document.getElementById('topbar-user').textContent=currentUser.nombre;
+  document.getElementById('topbar-role').textContent=currentUser.rol;
+  document.getElementById('home-greeting').textContent='Bienvenido, '+currentUser.nombre;
+  const grid=document.getElementById('apps-grid'); grid.innerHTML='';
+  currentUser.apps.forEach(appId=>{
+    const app=APPS[appId]; if(!app)return;
+    const a=document.createElement('a'); a.href=app.url;
+    a.className='app-card'+(app.wide?' wide':'');
+    a.innerHTML='<span class="app-icon">'+app.icon+'</span><div class="app-name">'+app.name+'</div><div class="app-desc">'+app.desc+'</div>';
     grid.appendChild(a);
   });
-  document.getElementById('screen-login').style.display = 'none';
-  document.getElementById('screen-home').style.display = 'flex';
-  pin = '';
-  updateDots();
+  document.getElementById('admin-btn').style.display=currentUser.rol==='Administrador'?'block':'none';
+  pin=''; updateDots(); showScreen('screen-home');
 }
-
-function logout() {
-  document.getElementById('screen-login').style.display = 'flex';
-  document.getElementById('screen-home').style.display = 'none';
-  document.getElementById('login-error').classList.remove('show');
-  pin = '';
-  updateDots();
+function logout(){ currentUser=null; pin=''; updateDots(); renderUserList(); showScreen('screen-users'); }
+function showAdmin(){ renderAdminList(); showScreen('screen-admin'); }
+function closeAdmin(){ showScreen('screen-home'); }
+function renderAdminList(){
+  const list=document.getElementById('users-list'); list.innerHTML='';
+  users.forEach(u=>{
+    const card=document.createElement('div'); card.className='user-card';
+    const tags=u.apps.map(a=>'<span class="app-tag">'+(APPS[a]?.name||a)+'</span>').join('');
+    card.innerHTML='<div class="user-card-header"><div><div class="user-card-name">'+u.nombre+'</div><div class="user-card-role">'+u.rol+' · PIN: '+'●'.repeat(u.pin.length)+'</div></div><div class="user-card-actions"><button class="btn-edit" onclick="openModal(\''+u.id+'\')" >Editar</button><button class="btn-del" onclick="deleteUser(\''+u.id+'\')" >Eliminar</button></div></div><div class="user-apps-row">'+(tags||'<span class="app-tag">Sin acceso</span>')+'</div>';
+    list.appendChild(card);
+  });
 }
+function deleteUser(id){
+  if(id===currentUser?.id){alert('No puedes eliminar tu propio usuario.');return;}
+  const u=users.find(x=>x.id===id); if(!u)return;
+  if(!confirm('\u00bfEliminar usuario "'+u.nombre+'"?'))return;
+  users=users.filter(x=>x.id!==id); saveUsers(); renderAdminList();
+}
+function openModal(id=null){
+  editingId=id; document.getElementById('modal-error').classList.remove('show');
+  document.getElementById('modal-title').textContent=id?'EDITAR USUARIO':'NUEVO USUARIO';
+  const c=document.getElementById('apps-checkboxes'); c.innerHTML='';
+  Object.entries(APPS).forEach(([key,app])=>{
+    const div=document.createElement('div'); div.className='app-check';
+    div.innerHTML='<input type="checkbox" id="chk-'+key+'" value="'+key+'"><label for="chk-'+key+'">'+app.name+'</label>';
+    c.appendChild(div);
+  });
+  if(id){
+    const u=users.find(x=>x.id===id);
+    document.getElementById('f-nombre').value=u.nombre;
+    document.getElementById('f-pin').value=u.pin;
+    document.getElementById('f-rol').value=u.rol;
+    u.apps.forEach(a=>{const chk=document.getElementById('chk-'+a);if(chk)chk.checked=true;});
+  } else {
+    document.getElementById('f-nombre').value='';
+    document.getElementById('f-pin').value='';
+    document.getElementById('f-rol').value='Almacenista';
+  }
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('show'); editingId=null; }
+function saveUser(){
+  const nombre=document.getElementById('f-nombre').value.trim();
+  const p=document.getElementById('f-pin').value.trim();
+  const rol=document.getElementById('f-rol').value;
+  const apps=Array.from(document.querySelectorAll('#apps-checkboxes input:checked')).map(c=>c.value);
+  const errEl=document.getElementById('modal-error');
+  if(!nombre){errEl.textContent='El nombre es obligatorio.';errEl.classList.add('show');return;}
+  if(!/^\d{6}$/.test(p)){errEl.textContent='El PIN debe ser exactamente 6 digitos.';errEl.classList.add('show');return;}
+  const dup=users.find(u=>u.pin===p&&u.id!==editingId);
+  if(dup){errEl.textContent='Ese PIN ya está en uso por '+dup.nombre+'.';errEl.classList.add('show');return;}
+  if(editingId){
+    const idx=users.findIndex(u=>u.id===editingId);
+    users[idx]={...users[idx],nombre,pin:p,rol,apps};
+    if(currentUser?.id===editingId)currentUser=users[idx];
+  } else {
+    users.push({id:'u'+Date.now(),nombre,pin:p,rol,apps});
+  }
+  saveUsers(); closeModal(); renderAdminList();
+}
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+loadUsers(); renderUserList();
 </script>
 </body>
 </html>
