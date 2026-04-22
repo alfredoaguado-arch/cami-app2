@@ -24,12 +24,12 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
 .login-header .app-name{font-size:11px;color:#888780;letter-spacing:.12em;text-transform:uppercase;margin-top:6px;display:block;}
 .login-body{padding:24px;}
 .login-label{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;display:block;}
-.user-list{display:flex;flex-direction:column;gap:8px;}
-.user-btn{background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:14px 16px;font-family:'Courier New',monospace;font-size:14px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;transition:all .12s;color:var(--text);}
-.user-btn:active{background:#1A1A18;color:#fff;transform:scale(.97);}
-.user-avatar{width:32px;height:32px;border-radius:50%;background:#1A1A18;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
-.user-btn:active .user-avatar{background:#fff;color:#1A1A18;}
-.user-role{font-size:10px;color:var(--muted);font-weight:400;margin-top:2px;}
+.ac-item{padding:12px 14px;cursor:pointer;font-family:'Courier New',monospace;font-size:13px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid var(--light);}
+.ac-item:last-child{border-bottom:none;}
+.ac-item:hover,.ac-item.selected{background:var(--light);}
+.ac-avatar{width:28px;height:28px;border-radius:50%;background:#1A1A18;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.ac-name{font-weight:700;}
+.ac-role{font-size:10px;color:var(--muted);margin-top:1px;}
 
 /* ── LOGIN: PIN ── */
 #screen-pin{align-items:center;justify-content:center;padding:2rem 1.5rem;}
@@ -117,7 +117,7 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
 </head>
 <body>
 
-<!-- PANTALLA 1: SELECCIÓN DE USUARIO -->
+<!-- PANTALLA 1: INGRESO DE NOMBRE CON AUTOCOMPLETADO -->
 <div id="screen-users" class="screen active">
   <div class="login-card">
     <div class="login-header">
@@ -125,8 +125,23 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
       <span class="app-name">Sistema de Control</span>
     </div>
     <div class="login-body">
-      <span class="login-label">Selecciona tu usuario</span>
-      <div class="user-list" id="user-list"></div>
+      <span class="login-label">Ingresa tu nombre</span>
+      <div style="position:relative">
+        <input type="text" id="nombre-input"
+          placeholder="Escribe tu nombre..."
+          autocomplete="off"
+          style="width:100%;padding:12px 14px;border:0.5px solid var(--border);border-radius:8px;font-family:'Courier New',monospace;font-size:14px;background:var(--bg);color:var(--text);outline:none;"
+          oninput="filtrarUsuarios(this.value)"
+          onkeydown="handleNombreKey(event)"
+        />
+        <div id="autocomplete-list" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--card);border:0.5px solid var(--border);border-top:none;border-radius:0 0 8px 8px;z-index:50;max-height:220px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.08)"></div>
+      </div>
+      <button id="btn-continuar"
+        onclick="confirmarNombre()"
+        style="display:none;width:100%;margin-top:12px;padding:13px;background:#1A1A18;color:#fff;border:none;border-radius:8px;font-family:'Courier New',monospace;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.04em;">
+        Continuar &#8594;
+      </button>
+      <div id="nombre-error" style="display:none;background:var(--err-bg);color:var(--err);border-radius:6px;padding:10px 14px;font-size:12px;margin-top:12px;text-align:center"></div>
     </div>
   </div>
 </div>
@@ -149,7 +164,7 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
         <div class="pin-dot" id="dot-4"></div>
         <div class="pin-dot" id="dot-5"></div>
       </div>
-      <div class="numpad">
+      <div class="numpad" id="numpad">
         <button class="num-btn" onclick="addDigit('1')">1</button>
         <button class="num-btn" onclick="addDigit('2')">2</button>
         <button class="num-btn" onclick="addDigit('3')">3</button>
@@ -224,126 +239,261 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
 </div>
 
 <script>
+const AS = 'https://script.google.com/macros/s/AKfycbw8Ucc9J3_TQcsAR0tn2Lk5DBN2bPWG6HF2pm3GfoEwa2NlRFQn5qZPVj7gy-IaLBSg/exec';
 const APPS = {
-  ot:          { icon:'&#127981;', name:'Ordenes de Trabajo',    desc:'Registro y seguimiento de OT', url:'https://alfredoaguado-arch.github.io/cami-ot/', wide:false },
-  almacen:     { icon:'&#128230;', name:'Almacen',               desc:'Materiales, herramienta y consumibles', url:'https://alfredoaguado-arch.github.io/cami-almacen/', wide:false },
-  prestamo:    { icon:'&#128295;', name:'Prestamo herramienta',  desc:'Solicita herramienta del almacen', url:'https://alfredoaguado-arch.github.io/cami-almacen/?modo=prestamo', wide:true },
-  requisicion: { icon:'&#128179;', name:'Requisicion de pago',   desc:'Solicita pagos y transferencias', url:'https://alfredoaguado-arch.github.io/cami-requisicion/', wide:false },
-  presupuesto: { icon:'&#128203;', name:'Presupuesto',           desc:'Genera cotizaciones en PDF', url:'https://alfredoaguado-arch.github.io/cami-presupuesto/', wide:false },
+  ot:          { icon:'&#127981;', name:'Ordenes de Trabajo',   desc:'Registro y seguimiento de OT', url:'https://alfredoaguado-arch.github.io/cami-ot/', wide:false },
+  almacen:     { icon:'&#128230;', name:'Almacen',              desc:'Materiales, herramienta y consumibles', url:'https://alfredoaguado-arch.github.io/cami-almacen/', wide:false },
+  prestamo:    { icon:'&#128295;', name:'Prestamo herramienta', desc:'Solicita herramienta del almacen', url:'https://alfredoaguado-arch.github.io/cami-almacen/?modo=prestamo', wide:true },
+  requisicion: { icon:'&#128179;', name:'Requisicion de pago',  desc:'Solicita pagos y transferencias', url:'https://alfredoaguado-arch.github.io/cami-requisicion/', wide:false },
+  presupuesto: { icon:'&#128203;', name:'Presupuesto',          desc:'Genera cotizaciones en PDF', url:'https://alfredoaguado-arch.github.io/cami-presupuesto/', wide:false },
 };
-const DEFAULT_USERS = [
-  { id:'u1', nombre:'Administrador', rol:'Administrador', pin:'263656', apps:['ot','almacen','requisicion','presupuesto'] },
-  { id:'u2', nombre:'Supervisor',    rol:'Supervisor',    pin:'405705', apps:['ot','almacen','requisicion','presupuesto'] },
-  { id:'u3', nombre:'Almacenista',   rol:'Almacenista',   pin:'672187', apps:['almacen','requisicion'] },
-  { id:'u4', nombre:'Invitado',      rol:'Invitado',      pin:'156945', apps:['prestamo'] },
-];
-let users = [], currentUser = null, pin = '', editingId = null;
-function loadUsers(){
-  try{ const s=localStorage.getItem('cami_users'); users=s?JSON.parse(s):DEFAULT_USERS; }
-  catch(e){ users=DEFAULT_USERS; }
+
+let userList = [];
+let selectedUser = null;
+let acIndex = -1;
+let pin = '';
+
+// ── CARGAR USUARIOS ───────────────────────────────────────────
+async function cargarUsuarios() {
+  try {
+    const r = await fetch(AS + '?action=listaUsuarios', { cache: 'no-store' });
+    const d = await r.json();
+    if (d.ok) userList = d.usuarios || [];
+  } catch(e) { console.warn('Sin conexion al cargar usuarios:', e.message); }
 }
-function saveUsers(){ localStorage.setItem('cami_users',JSON.stringify(users)); }
-function renderUserList(){
-  const list=document.getElementById('user-list'); list.innerHTML='';
-  users.forEach(u=>{
-    const btn=document.createElement('button'); btn.className='user-btn';
-    const ini=u.nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    btn.innerHTML='<div class="user-avatar">'+ini+'</div><div><div>'+u.nombre+'</div><div class="user-role">'+u.rol+'</div></div>';
-    btn.onclick=()=>selectUser(u); list.appendChild(btn);
+
+// ── AUTOCOMPLETADO ────────────────────────────────────────────
+function filtrarUsuarios(val) {
+  const list  = document.getElementById('autocomplete-list');
+  const btnC  = document.getElementById('btn-continuar');
+  const errEl = document.getElementById('nombre-error');
+  errEl.style.display = 'none';
+  acIndex = -1;
+
+  if (!val.trim()) {
+    list.style.display = 'none';
+    btnC.style.display = 'none';
+    selectedUser = null;
+    return;
+  }
+  const q = val.toLowerCase();
+  const matches = userList.filter(u => u.nombre.toLowerCase().includes(q));
+
+  if (matches.length === 0) {
+    list.style.display = 'none';
+    btnC.style.display = 'none';
+    selectedUser = null;
+    return;
+  }
+
+  list.innerHTML = '';
+  matches.forEach((u, i) => {
+    const ini = u.nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const div = document.createElement('div');
+    div.className = 'ac-item';
+    div.dataset.idx = i;
+    div.innerHTML =
+      '<div class="ac-avatar">'+ini+'</div>' +
+      '<div><div class="ac-name">'+u.nombre+'</div>' +
+      '<div class="ac-role">'+u.rol+'</div></div>';
+    div.onclick = () => elegirUsuario(u);
+    list.appendChild(div);
   });
+  list.style.display = 'block';
+
+  // Si hay match exacto, activar botón
+  const exact = userList.find(u => u.nombre.toLowerCase() === q);
+  if (exact) {
+    selectedUser = exact;
+    btnC.style.display = 'block';
+  } else {
+    selectedUser = null;
+    btnC.style.display = 'none';
+  }
 }
-function selectUser(u){
-  currentUser=u; pin='';
-  document.getElementById('pin-user-name').textContent=u.nombre;
-  updateDots(); document.getElementById('login-error').classList.remove('show');
+
+function elegirUsuario(u) {
+  selectedUser = u;
+  document.getElementById('nombre-input').value = u.nombre;
+  document.getElementById('autocomplete-list').style.display = 'none';
+  document.getElementById('btn-continuar').style.display = 'block';
+  document.getElementById('nombre-error').style.display = 'none';
+}
+
+function handleNombreKey(e) {
+  const list = document.getElementById('autocomplete-list');
+  const items = list.querySelectorAll('.ac-item');
+  if (e.key === 'ArrowDown') {
+    acIndex = Math.min(acIndex+1, items.length-1);
+    items.forEach((el,i) => el.classList.toggle('selected', i===acIndex));
+    e.preventDefault();
+  } else if (e.key === 'ArrowUp') {
+    acIndex = Math.max(acIndex-1, 0);
+    items.forEach((el,i) => el.classList.toggle('selected', i===acIndex));
+    e.preventDefault();
+  } else if (e.key === 'Enter') {
+    if (acIndex >= 0 && items[acIndex]) {
+      items[acIndex].click();
+    } else {
+      confirmarNombre();
+    }
+    e.preventDefault();
+  } else if (e.key === 'Escape') {
+    list.style.display = 'none';
+  }
+}
+
+function confirmarNombre() {
+  if (!selectedUser) {
+    const v = document.getElementById('nombre-input').value.trim();
+    const found = userList.find(u => u.nombre.toLowerCase() === v.toLowerCase());
+    if (!found) {
+      const errEl = document.getElementById('nombre-error');
+      errEl.textContent = 'Usuario no encontrado. Revisa el nombre.';
+      errEl.style.display = 'block';
+      return;
+    }
+    selectedUser = found;
+  }
+  // Pasar a pantalla PIN
+  document.getElementById('pin-user-name').textContent = selectedUser.nombre;
+  pin = ''; updateDots();
+  document.getElementById('login-error').classList.remove('show');
+  document.getElementById('autocomplete-list').style.display = 'none';
   showScreen('screen-pin');
 }
-function backToUsers(){ currentUser=null; pin=''; showScreen('screen-users'); }
-function updateDots(){ for(let i=0;i<6;i++) document.getElementById('dot-'+i).classList.toggle('filled',i<pin.length); }
-function addDigit(d){ if(pin.length>=6)return; pin+=d; updateDots(); if(pin.length===6)setTimeout(tryLogin,150); }
-function delDigit(){ pin=pin.slice(0,-1); updateDots(); document.getElementById('login-error').classList.remove('show'); }
-function tryLogin(){
-  if(!currentUser||pin!==currentUser.pin){
-    const card=document.querySelector('#screen-pin .login-card');
-    card.classList.add('shake'); setTimeout(()=>card.classList.remove('shake'),400);
-    document.getElementById('login-error').classList.add('show'); pin=''; updateDots(); return;
+
+// ── PIN ───────────────────────────────────────────────────────
+function updateDots() {
+  for (let i=0; i<6; i++)
+    document.getElementById('dot-'+i).classList.toggle('filled', i<pin.length);
+}
+function addDigit(d) {
+  if (pin.length>=6) return;
+  pin+=d; updateDots();
+  if (pin.length===6) setTimeout(tryLogin,150);
+}
+function delDigit() {
+  pin=pin.slice(0,-1); updateDots();
+  document.getElementById('login-error').classList.remove('show');
+}
+
+function backToUsers() {
+  pin=''; updateDots();
+  document.getElementById('nombre-input').value = selectedUser?.nombre || '';
+  document.getElementById('btn-continuar').style.display = 'block';
+  showScreen('screen-users');
+  setTimeout(()=>document.getElementById('nombre-input').focus(),200);
+}
+
+// ── LOGIN SERVER-SIDE ─────────────────────────────────────────
+async function tryLogin() {
+  const numpad = document.getElementById('numpad');
+  numpad.style.pointerEvents = 'none';
+  document.getElementById('login-error').classList.remove('show');
+  try {
+    const r = await fetch(AS, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({ action:'login', nombre: selectedUser.nombre, pin })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      sessionStorage.setItem('cami_session', JSON.stringify({
+        token: d.token, nombre: d.nombre,
+        rol: d.rol, apps: d.apps,
+        exp: Date.now() + 8*60*60*1000
+      }));
+      entrarHome(d);
+    } else {
+      const card = document.querySelector('#screen-pin .login-card');
+      card.classList.add('shake');
+      setTimeout(()=>card.classList.remove('shake'),400);
+      document.getElementById('login-error').textContent = d.error||'PIN incorrecto';
+      document.getElementById('login-error').classList.add('show');
+      pin=''; updateDots();
+    }
+  } catch(e) {
+    document.getElementById('login-error').textContent = 'Error de conexion. Intenta de nuevo.';
+    document.getElementById('login-error').classList.add('show');
+    pin=''; updateDots();
+  } finally {
+    numpad.style.pointerEvents='';
   }
-  document.getElementById('topbar-user').textContent=currentUser.nombre;
-  document.getElementById('topbar-role').textContent=currentUser.rol;
-  document.getElementById('home-greeting').textContent='Bienvenido, '+currentUser.nombre;
-  const grid=document.getElementById('apps-grid'); grid.innerHTML='';
-  currentUser.apps.forEach(appId=>{
-    const app=APPS[appId]; if(!app)return;
+}
+
+// ── HOME ──────────────────────────────────────────────────────
+function entrarHome(data) {
+  document.getElementById('topbar-user').textContent = data.nombre;
+  document.getElementById('topbar-role').textContent = data.rol;
+  document.getElementById('home-greeting').textContent = 'Bienvenido, '+data.nombre;
+  const grid = document.getElementById('apps-grid'); grid.innerHTML='';
+  (data.apps||[]).forEach(appId=>{
+    const app=APPS[appId]; if(!app) return;
     const a=document.createElement('a'); a.href=app.url;
     a.className='app-card'+(app.wide?' wide':'');
     a.innerHTML='<span class="app-icon">'+app.icon+'</span><div class="app-name">'+app.name+'</div><div class="app-desc">'+app.desc+'</div>';
     grid.appendChild(a);
   });
-  document.getElementById('admin-btn').style.display=currentUser.rol==='Administrador'?'block':'none';
-  pin=''; updateDots(); showScreen('screen-home');
+  document.getElementById('admin-btn').style.display = data.rol==='Administrador'?'block':'none';
+  pin=''; updateDots();
+  showScreen('screen-home');
 }
-function logout(){ currentUser=null; pin=''; updateDots(); renderUserList(); showScreen('screen-users'); }
-function showAdmin(){ renderAdminList(); showScreen('screen-admin'); }
-function closeAdmin(){ showScreen('screen-home'); }
-function renderAdminList(){
+
+function logout() {
+  sessionStorage.removeItem('cami_session');
+  selectedUser=null; pin='';
+  document.getElementById('nombre-input').value='';
+  document.getElementById('btn-continuar').style.display='none';
+  document.getElementById('autocomplete-list').style.display='none';
+  showScreen('screen-users');
+  setTimeout(()=>document.getElementById('nombre-input').focus(),200);
+}
+
+// ── ADMIN ─────────────────────────────────────────────────────
+function showAdmin() { renderAdminList(); showScreen('screen-admin'); }
+function closeAdmin() { showScreen('screen-home'); }
+
+function renderAdminList() {
   const list=document.getElementById('users-list'); list.innerHTML='';
-  users.forEach(u=>{
+  if (!userList.length) {
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;padding:16px;text-align:center">No hay usuarios registrados.</div>';
+    return;
+  }
+  userList.forEach(u=>{
     const card=document.createElement('div'); card.className='user-card';
-    const tags=u.apps.map(a=>'<span class="app-tag">'+(APPS[a]?.name||a)+'</span>').join('');
-    card.innerHTML='<div class="user-card-header"><div><div class="user-card-name">'+u.nombre+'</div><div class="user-card-role">'+u.rol+' · PIN: '+'●'.repeat(u.pin.length)+'</div></div><div class="user-card-actions"><button class="btn-edit" onclick="openModal(\''+u.id+'\')" >Editar</button><button class="btn-del" onclick="deleteUser(\''+u.id+'\')" >Eliminar</button></div></div><div class="user-apps-row">'+(tags||'<span class="app-tag">Sin acceso</span>')+'</div>';
+    const tags=(u.apps||[]).map(a=>'<span class="app-tag">'+(APPS[a]?.name||a)+'</span>').join('');
+    card.innerHTML='<div class="user-card-header"><div><div class="user-card-name">'+u.nombre+'</div><div class="user-card-role">'+u.rol+' · PIN: ●●●●●●</div></div></div><div class="user-apps-row">'+(tags||'<span class="app-tag">Sin acceso</span>')+'</div>';
     list.appendChild(card);
   });
+  const info=document.createElement('div');
+  info.style.cssText='background:#f5f3ee;border:0.5px solid #d3d1c7;border-radius:8px;padding:14px;margin-top:16px;font-size:11px;color:#888780;line-height:1.7;';
+  info.innerHTML='🔒 Gestiona usuarios y PINs en:<br><b>Google Sheet → CAMI-Usuarios</b><br>Solo el administrador tiene acceso.';
+  list.appendChild(info);
 }
-function deleteUser(id){
-  if(id===currentUser?.id){alert('No puedes eliminar tu propio usuario.');return;}
-  const u=users.find(x=>x.id===id); if(!u)return;
-  if(!confirm('\u00bfEliminar usuario "'+u.nombre+'"?'))return;
-  users=users.filter(x=>x.id!==id); saveUsers(); renderAdminList();
+
+// ── SESION ────────────────────────────────────────────────────
+function checkSession() {
+  try {
+    const raw=sessionStorage.getItem('cami_session');
+    if (!raw) return false;
+    const s=JSON.parse(raw);
+    if (Date.now()>s.exp){sessionStorage.removeItem('cami_session');return false;}
+    entrarHome(s); return true;
+  } catch(e){return false;}
 }
-function openModal(id=null){
-  editingId=id; document.getElementById('modal-error').classList.remove('show');
-  document.getElementById('modal-title').textContent=id?'EDITAR USUARIO':'NUEVO USUARIO';
-  const c=document.getElementById('apps-checkboxes'); c.innerHTML='';
-  Object.entries(APPS).forEach(([key,app])=>{
-    const div=document.createElement('div'); div.className='app-check';
-    div.innerHTML='<input type="checkbox" id="chk-'+key+'" value="'+key+'"><label for="chk-'+key+'">'+app.name+'</label>';
-    c.appendChild(div);
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+if (!checkSession()) {
+  cargarUsuarios().then(()=>{
+    setTimeout(()=>document.getElementById('nombre-input')?.focus(),300);
   });
-  if(id){
-    const u=users.find(x=>x.id===id);
-    document.getElementById('f-nombre').value=u.nombre;
-    document.getElementById('f-pin').value=u.pin;
-    document.getElementById('f-rol').value=u.rol;
-    u.apps.forEach(a=>{const chk=document.getElementById('chk-'+a);if(chk)chk.checked=true;});
-  } else {
-    document.getElementById('f-nombre').value='';
-    document.getElementById('f-pin').value='';
-    document.getElementById('f-rol').value='Almacenista';
-  }
-  document.getElementById('modal-overlay').classList.add('show');
 }
-function closeModal(){ document.getElementById('modal-overlay').classList.remove('show'); editingId=null; }
-function saveUser(){
-  const nombre=document.getElementById('f-nombre').value.trim();
-  const p=document.getElementById('f-pin').value.trim();
-  const rol=document.getElementById('f-rol').value;
-  const apps=Array.from(document.querySelectorAll('#apps-checkboxes input:checked')).map(c=>c.value);
-  const errEl=document.getElementById('modal-error');
-  if(!nombre){errEl.textContent='El nombre es obligatorio.';errEl.classList.add('show');return;}
-  if(!/^\d{6}$/.test(p)){errEl.textContent='El PIN debe ser exactamente 6 digitos.';errEl.classList.add('show');return;}
-  const dup=users.find(u=>u.pin===p&&u.id!==editingId);
-  if(dup){errEl.textContent='Ese PIN ya está en uso por '+dup.nombre+'.';errEl.classList.add('show');return;}
-  if(editingId){
-    const idx=users.findIndex(u=>u.id===editingId);
-    users[idx]={...users[idx],nombre,pin:p,rol,apps};
-    if(currentUser?.id===editingId)currentUser=users[idx];
-  } else {
-    users.push({id:'u'+Date.now(),nombre,pin:p,rol,apps});
-  }
-  saveUsers(); closeModal(); renderAdminList();
-}
-function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-loadUsers(); renderUserList();
 </script>
 </body>
 </html>
