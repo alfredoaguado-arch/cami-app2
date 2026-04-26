@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
@@ -41,7 +42,7 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
 .numpad-container{position:relative;}
 .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .num-btn{background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:16px 8px;font-size:20px;font-family:'Courier New',monospace;cursor:pointer;transition:all .12s;text-align:center;}
-.num-btn:active{background:#1A1A18;color:#fff;transform:scale(.96);}
+.num-btn:active,.num-btn.pressed{background:#1A1A18;color:#fff;transform:scale(.96);}
 .num-btn.del{font-size:14px;color:var(--muted);}
 .num-btn.empty{visibility:hidden;}
 .login-error{background:var(--err-bg);color:var(--err);border-radius:6px;padding:10px 14px;font-size:12px;margin-top:16px;text-align:center;display:none;}
@@ -181,18 +182,18 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
       </div>
       <div class="numpad-container">
         <div class="numpad" id="numpad">
-          <button class="num-btn" onclick="addDigit('1')">1</button>
-          <button class="num-btn" onclick="addDigit('2')">2</button>
-          <button class="num-btn" onclick="addDigit('3')">3</button>
-          <button class="num-btn" onclick="addDigit('4')">4</button>
-          <button class="num-btn" onclick="addDigit('5')">5</button>
-          <button class="num-btn" onclick="addDigit('6')">6</button>
-          <button class="num-btn" onclick="addDigit('7')">7</button>
-          <button class="num-btn" onclick="addDigit('8')">8</button>
-          <button class="num-btn" onclick="addDigit('9')">9</button>
+          <button class="num-btn" data-key="1" onclick="addDigit('1')">1</button>
+          <button class="num-btn" data-key="2" onclick="addDigit('2')">2</button>
+          <button class="num-btn" data-key="3" onclick="addDigit('3')">3</button>
+          <button class="num-btn" data-key="4" onclick="addDigit('4')">4</button>
+          <button class="num-btn" data-key="5" onclick="addDigit('5')">5</button>
+          <button class="num-btn" data-key="6" onclick="addDigit('6')">6</button>
+          <button class="num-btn" data-key="7" onclick="addDigit('7')">7</button>
+          <button class="num-btn" data-key="8" onclick="addDigit('8')">8</button>
+          <button class="num-btn" data-key="9" onclick="addDigit('9')">9</button>
           <button class="num-btn empty"></button>
-          <button class="num-btn" onclick="addDigit('0')">0</button>
-          <button class="num-btn del" onclick="delDigit()">&#9003;</button>
+          <button class="num-btn" data-key="0" onclick="addDigit('0')">0</button>
+          <button class="num-btn del" data-key="del" onclick="delDigit()">&#9003;</button>
         </div>
         <div class="numpad-overlay" id="numpad-overlay">
           <div class="spinner"></div>
@@ -267,6 +268,7 @@ const APPS = {
   prestamo:    { icon:'&#128295;', name:'Prestamo herramienta', desc:'Solicita herramienta del almacen', url:'https://alfredoaguado-arch.github.io/cami-almacen/?modo=prestamo', wide:true },
   requisicion: { icon:'&#128179;', name:'Requisicion de pago',  desc:'Solicita pagos y transferencias', url:'https://alfredoaguado-arch.github.io/cami-requisicion/', wide:false },
   presupuesto: { icon:'&#128203;', name:'Presupuesto',          desc:'Genera cotizaciones en PDF', url:'https://alfredoaguado-arch.github.io/cami-presupuesto/', wide:false },
+  nomina:      { icon:'&#128176;', name:'Nomina',               desc:'Captura, aprobacion y dispersion quincenal', url:'https://alfredoaguado-arch.github.io/cami-nomina/', wide:false },
 };
 
 let userList = [];
@@ -416,6 +418,37 @@ function backToUsers() {
   setTimeout(()=>document.getElementById('nombre-input').focus(),200);
 }
 
+// ── TECLADO FISICO EN PANTALLA PIN ────────────────────────────
+function flashKey(selector) {
+  const el = document.querySelector(selector);
+  if (!el) return;
+  el.classList.add('pressed');
+  setTimeout(()=>el.classList.remove('pressed'), 100);
+}
+
+document.addEventListener('keydown', function(e) {
+  // Solo cuando la pantalla del PIN está activa
+  const pinScreen = document.getElementById('screen-pin');
+  if (!pinScreen || !pinScreen.classList.contains('active')) return;
+
+  // No interferir mientras valida (numpad bloqueado)
+  const overlay = document.getElementById('numpad-overlay');
+  if (overlay && overlay.classList.contains('show')) return;
+
+  if (/^[0-9]$/.test(e.key)) {
+    addDigit(e.key);
+    flashKey('.num-btn[data-key="'+e.key+'"]');
+    e.preventDefault();
+  } else if (e.key === 'Backspace' || e.key === 'Delete') {
+    delDigit();
+    flashKey('.num-btn[data-key="del"]');
+    e.preventDefault();
+  } else if (e.key === 'Escape') {
+    backToUsers();
+    e.preventDefault();
+  }
+});
+
 // ── LOGIN SERVER-SIDE ─────────────────────────────────────────
 async function tryLogin() {
   const numpad = document.getElementById('numpad');
@@ -496,12 +529,12 @@ function renderAdminList() {
   userList.forEach(u=>{
     const card=document.createElement('div'); card.className='user-card';
     const tags=(u.apps||[]).map(a=>'<span class="app-tag">'+(APPS[a]?.name||a)+'</span>').join('');
-    card.innerHTML='<div class="user-card-header"><div><div class="user-card-name">'+u.nombre+'</div><div class="user-card-role">'+u.rol+' · PIN: ●●●●●●</div></div></div><div class="user-apps-row">'+(tags||'<span class="app-tag">Sin acceso</span>')+'</div>';
+    card.innerHTML='<div class="user-card-header"><div><div class="user-card-name">'+u.nombre+'</div><div class="user-card-role">'+u.rol+' &middot; PIN: &#9679;&#9679;&#9679;&#9679;&#9679;&#9679;</div></div></div><div class="user-apps-row">'+(tags||'<span class="app-tag">Sin acceso</span>')+'</div>';
     list.appendChild(card);
   });
   const info=document.createElement('div');
   info.style.cssText='background:#f5f3ee;border:0.5px solid #d3d1c7;border-radius:8px;padding:14px;margin-top:16px;font-size:11px;color:#888780;line-height:1.7;';
-  info.innerHTML='🔒 Gestiona usuarios y PINs en:<br><b>Google Sheet → CAMI-Usuarios</b><br>Solo el administrador tiene acceso.';
+  info.innerHTML='&#128274; Gestiona usuarios y PINs en:<br><b>Google Sheet &rarr; CAMI-Usuarios</b><br>Solo el administrador tiene acceso.';
   list.appendChild(info);
 }
 
@@ -528,3 +561,5 @@ if (!checkSession()) {
   });
 }
 </script>
+</body>
+</html>
