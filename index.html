@@ -239,6 +239,18 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
   </div>
 </div>
 
+<!-- PANTALLA 5: SUBMENU DE CALIDAD -->
+<div id="screen-calidad" class="screen">
+  <div class="admin-topbar">
+    <button class="admin-back" onclick="closeCalidad()">&#8592;</button>
+    <span class="admin-title">CONTROL DE CALIDAD</span>
+  </div>
+  <div class="home-body">
+    <div class="home-greeting">Selecciona un proceso de inspeccion</div>
+    <div class="apps-grid" id="calidad-list"></div>
+  </div>
+</div>
+
 <!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
@@ -270,7 +282,7 @@ const APPS = {
   requisicion: { icon:'&#128179;', name:'Requisicion de pago',  desc:'Solicita pagos y transferencias', url:'https://alfredoaguado-arch.github.io/cami-requisicion/', wide:false },
   presupuesto: { icon:'&#128203;', name:'Presupuesto',          desc:'Genera cotizaciones en PDF', url:'https://alfredoaguado-arch.github.io/cami-presupuesto/', wide:false },
   nomina:      { icon:'&#128176;', name:'Nomina',               desc:'Captura, aprobacion y dispersion quincenal', url:'https://alfredoaguado-arch.github.io/cami-nomina/', wide:false },
-  calidad:     { icon:'&#9989;',   name:'Control de Calidad',   desc:'Inspeccion QC y reportes (recepcion MP)', url:'https://alfredoaguado-arch.github.io/cami-calidad/', wide:false },
+  calidad:     { icon:'&#9989;',   name:'Control de Calidad',   desc:'Inspeccion QC por proceso', url:'https://alfredoaguado-arch.github.io/cami-calidad/', wide:false },
 };
 
 let userList = [];
@@ -498,6 +510,15 @@ function entrarHome(data) {
   const grid = document.getElementById('apps-grid'); grid.innerHTML='';
   (data.apps||[]).forEach(appId=>{
     const app=APPS[appId]; if(!app) return;
+    // Calidad: en vez de link directo, abre una vista con el submenu de procesos
+    if (appId==='calidad') {
+      const c=document.createElement('div');
+      c.className='app-card'+(app.wide?' wide':'');
+      c.onclick=openCalidad;
+      c.innerHTML='<span class="app-icon">'+app.icon+'</span><div class="app-name">'+app.name+'</div><div class="app-desc">'+app.desc+'</div>';
+      grid.appendChild(c);
+      return;
+    }
     const a=document.createElement('a'); a.href=app.url;
     a.className='app-card'+(app.wide?' wide':'');
     a.innerHTML='<span class="app-icon">'+app.icon+'</span><div class="app-name">'+app.name+'</div><div class="app-desc">'+app.desc+'</div>';
@@ -517,6 +538,30 @@ function logout() {
   showScreen('screen-users');
   setTimeout(()=>document.getElementById('nombre-input').focus(),200);
 }
+
+// ── CALIDAD: SUBMENU DE PROCESOS ──────────────────────────────
+// Solo procesos VALIDADOS Y EN PRODUCCION. Mismo origin => la sesion
+// (sessionStorage.cami_session) persiste al abrir cualquiera de estos.
+const CALIDAD_BASE = 'https://alfredoaguado-arch.github.io/cami-calidad/';
+const CALIDAD_PROCESOS = [
+  { icon:'&#128229;', name:'Recepcion de material', desc:'QC-02 &middot; Inspeccion de MP',        proceso:'qc-02'  },
+  { icon:'&#128736;', name:'Ensamble',               desc:'QC-04 &middot; Inspeccion de ensamble',   proceso:'qc-04'  },
+  { icon:'&#128300;', name:'Penetrantes (PT)',       desc:'QC-05B &middot; Ensayo no destructivo',   proceso:'qc-05b' },
+  { icon:'&#127912;', name:'Preparacion superficies', desc:'QC-06 &middot; Inspeccion de superficie', proceso:'qc-06'  },
+];
+
+function renderCalidad() {
+  const list=document.getElementById('calidad-list'); list.innerHTML='';
+  CALIDAD_PROCESOS.forEach(p=>{
+    const a=document.createElement('a');
+    a.href=CALIDAD_BASE+'?proceso='+p.proceso;
+    a.className='app-card';
+    a.innerHTML='<span class="app-icon">'+p.icon+'</span><div class="app-name">'+p.name+'</div><div class="app-desc">'+p.desc+'</div>';
+    list.appendChild(a);
+  });
+}
+function openCalidad() { renderCalidad(); showScreen('screen-calidad'); }
+function closeCalidad() { showScreen('screen-home'); }
 
 // ── ADMIN ─────────────────────────────────────────────────────
 function showAdmin() { renderAdminList(); showScreen('screen-admin'); }
