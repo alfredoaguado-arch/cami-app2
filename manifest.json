@@ -1,19 +1,18 @@
 {
-  "name": "CAMI Sistema",
+  "name": "CAMI",
   "short_name": "CAMI",
-  "description": "Sistema de control CAMI - Aceros Manufacturados",
+  "description": "Sistema de Control de Producción — Aceros Manufacturados",
   "start_url": "/cami-app2/",
   "scope": "/cami-app2/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#1A1A18",
-  "theme_color": "#1A1A18",
+  "background_color": "#21353E",
+  "theme_color": "#21353E",
   "icons": [
-    {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
