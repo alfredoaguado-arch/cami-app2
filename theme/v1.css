@@ -1,0 +1,107 @@
+/* ============================================================================
+   CAMI Theme v1 — Identidad visual canónica
+   Origen: extraída de cami-calidad, cami-reportes, cami-procesos (lenguaje
+   "documento/print" navy + naranja + papel + Sora/DM Sans + degradado fusión).
+   Generado: 2026-06-21
+   ============================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  /* ── Paleta núcleo ─────────────────────────────────────────── */
+  --cami-navy:          #21353E;
+  --cami-navy-2:        #2C4651;
+  --cami-navy-deep:     #19272E;   /* stop final del gradiente del header */
+  --cami-orange:        #F37933;
+  --cami-orange-mid:    #EF5E39;   /* stop intermedio del gradiente 3-stops */
+  --cami-prima-red:     #E8483F;
+  --cami-paper:         #FAF6EE;
+  --cami-paper-2:       #F2EBDD;
+  --cami-paper-on-navy: #F8C8A8;   /* peach para subtítulos sobre navy */
+
+  /* ── Bordes / texto ────────────────────────────────────────── */
+  --cami-rule:          #E0D7C4;
+  --cami-rule-2:        #C8BCA1;
+  --cami-ink:           #1A2A32;
+  --cami-ink-soft:      #5A6E78;
+
+  /* ── Estados (color sólido + fondo suave) ──────────────────── */
+  --cami-green:         #2E7D5B;
+  --cami-green-2:       #3FA45B;
+  --cami-amber:         #C68A2C;
+  --cami-red:           #B33A2A;
+  --cami-red-2:         #C0392B;
+  --cami-info:          #2A5A8C;
+
+  --cami-green-bg:      #EAF3DE;
+  --cami-amber-bg:      #FFF4D6;
+  --cami-blue-bg:       #E8F0F8;
+  --cami-red-bg:        #FCEBEB;
+  --cami-gray-bg:       #EFEFED;
+
+  /* ── Tipografía ────────────────────────────────────────────── */
+  --cami-font-display:  'Sora', system-ui, -apple-system, sans-serif;
+  --cami-font-body:     'DM Sans', system-ui, -apple-system, sans-serif;
+
+  /* ── Degradados canónicos ──────────────────────────────────── */
+  --cami-fusion-grad:   linear-gradient(90deg, var(--cami-orange) 0%, var(--cami-prima-red) 100%);
+  --cami-fusion-grad-3: linear-gradient(90deg, var(--cami-orange) 0%, var(--cami-orange-mid) 50%, var(--cami-prima-red) 100%);
+  --cami-navy-grad:     linear-gradient(100deg, var(--cami-navy) 0%, var(--cami-navy-deep) 100%);
+
+  /* ── Radios y sombras ──────────────────────────────────────── */
+  --cami-radius-sm:     4px;
+  --cami-radius:        8px;
+  --cami-radius-lg:     12px;
+  --cami-shadow-sm:     0 1px 3px rgba(33, 53, 62, 0.08);
+  --cami-shadow:        0 4px 16px rgba(33, 53, 62, 0.12);
+}
+
+/* ── Base del body para módulos que opt-in via class .cami-themed ── */
+/* Aplica si pones <body class="cami-themed">. NO afecta módulos que no
+   opten in (transición gradual sin romper nada). */
+body.cami-themed {
+  background: var(--cami-paper);
+  color: var(--cami-ink);
+  font-family: var(--cami-font-body);
+  font-size: 14px;
+  line-height: 1.45;
+  position: relative;
+}
+body.cami-themed::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(33,53,62,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(33,53,62,0.025) 1px, transparent 1px);
+  background-size: 12mm 12mm;
+  pointer-events: none;
+  z-index: 0;
+}
+body.cami-themed > * { position: relative; z-index: 1; }
+
+/* ── Patrón canónico: eyebrow (Sora 600 6pt) ───────────────── */
+.cami-eyebrow {
+  font-family: var(--cami-font-display);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cami-orange);
+  line-height: 1;
+}
+
+/* ── Patrón canónico: subrayado degradado fusión ──────────── */
+/* Aplica via .cami-fusion-underline a cualquier elemento — agrega una
+   barra de degradado 2px en la base, con position relative implícito. */
+.cami-fusion-underline {
+  position: relative;
+  padding-bottom: 6px;
+}
+.cami-fusion-underline::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 100%; height: 2px;
+  background: var(--cami-fusion-grad);
+  border-radius: 1px;
+}
