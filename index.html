@@ -6,135 +6,775 @@
 <title>CAMI — Acceso</title>
 <link rel="manifest" href="manifest.json"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="CAMI"/>
-<meta name="theme-color" content="#1A1A18"/>
+<meta name="theme-color" content="#21353E"/>
+<link rel="stylesheet" href="theme/v1.css"/>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#F5F3EE;--card:#fff;--border:#D3D1C7;--text:#1A1A18;--muted:#888780;--dark:#1A1A18;--light:#EFEFED;--err-bg:#FCEBEB;--err:#A32D2D;}
-body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;}
-.screen{display:none;flex-direction:column;min-height:100vh;min-height:100dvh;}
-.screen.active{display:flex;}
+/* ============================================================================
+   cami-app2 hub — v2.0 (identidad CAMI navy + naranja + papel + Sora/DM Sans)
+   Hereda tokens de theme/v1.css. Cero cambios a la lógica JS — solo envoltura.
+   ============================================================================ */
 
-/* ── LOGIN: SELECCIÓN DE USUARIO ── */
-#screen-users{background:#1A1A18;justify-content:flex-start;padding:0;overflow-y:auto;}
-.login-card{background:transparent;border:none;border-radius:0;width:100%;max-width:100%;}
-.login-header{background:transparent;padding:52px 32px 36px;text-align:center;border-bottom:1px solid rgba(255,255,255,.1);}
-.logo-text{font-size:52px;font-weight:900;color:#fff;letter-spacing:.25em;font-family:'Courier New',monospace;display:block;}
-.login-header .app-name{font-size:12px;color:#888780;letter-spacing:.18em;text-transform:uppercase;margin-top:10px;display:block;}
-.login-body{padding:36px 32px 32px;}
-.login-label{font-size:12px;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;display:block;}
-.ac-item{padding:14px 18px;cursor:pointer;font-family:'Courier New',monospace;font-size:14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.06);transition:background .1s;}
-.ac-item:last-child{border-bottom:none;border-radius:0 0 10px 10px;}
-.ac-item:hover,.ac-item.selected{background:rgba(255,255,255,.1);}
-.ac-avatar{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
-.ac-name{font-weight:700;color:#fff;}
-.ac-role{font-size:10px;color:rgba(255,255,255,.45);margin-top:2px;}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── LOGIN: PIN ── */
-#screen-pin{align-items:center;justify-content:center;padding:2rem 1.5rem;}
-.pin-back{background:none;border:none;font-family:'Courier New',monospace;font-size:11px;color:var(--muted);cursor:pointer;letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px;align-self:flex-start;padding:4px 0;}
-.pin-back:hover{color:var(--text);}
-.pin-user-name{font-size:18px;font-weight:700;margin-bottom:4px;}
-.pin-display{display:flex;gap:10px;justify-content:center;margin-bottom:24px;}
-.pin-dot{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg);transition:all .15s;}
-.pin-dot.filled{background:#1A1A18;border-color:#1A1A18;}
-.numpad-container{position:relative;}
-.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-.num-btn{background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:16px 8px;font-size:20px;font-family:'Courier New',monospace;cursor:pointer;transition:all .12s;text-align:center;}
-.num-btn:active,.num-btn.pressed{background:#1A1A18;color:#fff;transform:scale(.96);}
-.num-btn.del{font-size:14px;color:var(--muted);}
-.num-btn.empty{visibility:hidden;}
-.login-error{background:var(--err-bg);color:var(--err);border-radius:6px;padding:10px 14px;font-size:12px;margin-top:16px;text-align:center;display:none;}
-.login-error.show{display:block;}
-@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
-.shake{animation:shake .4s ease;}
+html, body { min-height: 100vh; min-height: 100dvh; }
+body.cami-themed { font-size: 14px; }
 
-/* ── SPINNER ── */
-@keyframes spin{to{transform:rotate(360deg);}}
-.spinner{width:36px;height:36px;border:3px solid rgba(26,26,24,.15);border-top-color:#1A1A18;border-radius:50%;animation:spin .8s linear infinite;}
-.spinner.light{border-color:rgba(255,255,255,.2);border-top-color:#fff;}
-.numpad-overlay{position:absolute;inset:0;background:rgba(245,243,238,.92);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;border-radius:10px;z-index:10;}
-.numpad-overlay.show{display:flex;}
-.numpad-overlay .validating-text{font-size:11px;color:#1A1A18;letter-spacing:.1em;text-transform:uppercase;font-weight:700;}
-.users-loading{display:flex;align-items:center;justify-content:center;gap:12px;padding:18px 0;color:rgba(255,255,255,.5);font-size:11px;letter-spacing:.08em;text-transform:uppercase;}
-.users-loading.hidden{display:none;}
-.users-loading .spinner{width:18px;height:18px;border-width:2px;}
+.screen { display: none; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+.screen.active { display: flex; }
 
-/* ── HOME ── */
-#screen-home{flex-direction:column;}
-.topbar{background:#1A1A18;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
-.topbar .logo-text{font-size:22px;letter-spacing:.15em;}
-.topbar-right{text-align:right;}
-.topbar-user{font-size:11px;color:#888780;letter-spacing:.06em;text-transform:uppercase;}
-.topbar-role{font-size:13px;font-weight:700;color:#fff;margin-top:2px;}
-.home-body{padding:20px 16px;flex:1;}
-.home-greeting{font-size:13px;color:var(--muted);margin-bottom:20px;letter-spacing:.04em;}
-.apps-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.app-card{background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:18px 16px;cursor:pointer;transition:all .15s;text-decoration:none;color:var(--text);display:block;}
-.app-card:active{transform:scale(.97);background:var(--light);}
-.app-card.wide{grid-column:1/-1;}
-.app-icon{font-size:24px;margin-bottom:10px;display:block;}
-.app-name{font-size:13px;font-weight:700;letter-spacing:.04em;margin-bottom:4px;}
-.app-desc{font-size:11px;color:var(--muted);line-height:1.5;}
-.home-actions{display:flex;gap:10px;margin:0 16px 16px;}
-.logout-btn{flex:1;padding:14px;background:none;border:0.5px solid var(--border);border-radius:8px;font-family:'Courier New',monospace;font-size:13px;color:var(--muted);cursor:pointer;letter-spacing:.04em;}
-.logout-btn:active{background:var(--light);}
-.admin-btn{padding:14px 18px;background:#1A1A18;border:none;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;color:#fff;cursor:pointer;letter-spacing:.04em;}
-.admin-btn:active{background:#333;}
+/* ── LOGIN: SELECCIÓN DE USUARIO ─────────────────────────────────────────── */
+#screen-users {
+  background: var(--cami-navy-grad);
+  justify-content: flex-start;
+  padding: 0;
+  overflow-y: auto;
+  position: relative;
+}
+#screen-users::after,
+#screen-pin::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 6px;
+  background: var(--cami-orange);
+  z-index: 2;
+}
+#screen-users::before, #screen-pin::before { display: none; }  /* sin grilla de papel sobre navy */
 
-/* ── ADMIN PANEL ── */
-#screen-admin{flex-direction:column;}
-.admin-topbar{background:#1A1A18;padding:16px 20px;display:flex;align-items:center;gap:12px;}
-.admin-back{background:none;border:none;color:#888780;font-size:18px;cursor:pointer;padding:0;line-height:1;}
-.admin-title{font-size:16px;font-weight:700;color:#fff;letter-spacing:.08em;}
-.admin-body{padding:16px;flex:1;overflow-y:auto;}
-.admin-section-title{font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
-.add-user-btn{background:#1A1A18;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-family:'Courier New',monospace;font-size:11px;cursor:pointer;letter-spacing:.04em;}
-.user-card{background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
-.user-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.user-card-name{font-size:14px;font-weight:700;}
-.user-card-role{font-size:10px;color:var(--muted);margin-top:2px;}
-.user-card-actions{display:flex;gap:8px;}
-.btn-edit,.btn-del{background:none;border:0.5px solid var(--border);border-radius:6px;padding:5px 10px;font-family:'Courier New',monospace;font-size:11px;cursor:pointer;}
-.btn-del{color:var(--err);border-color:#F7C1C1;}
-.btn-edit:active{background:var(--light);}
-.btn-del:active{background:var(--err-bg);}
-.user-apps-row{display:flex;flex-wrap:wrap;gap:6px;}
-.app-tag{font-size:10px;background:var(--light);border:0.5px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--muted);letter-spacing:.04em;}
+.login-card { background: transparent; border: none; width: 100%; max-width: 100%; }
+.login-header {
+  padding: 56px 32px 36px;
+  text-align: center;
+  border-bottom: 1px solid rgba(248, 200, 168, 0.15);
+}
+.login-brand {
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.login-brand img { height: 80px; width: auto; display: block; }
+.login-brand .cami-eyebrow {
+  font-size: 11px;
+  color: var(--cami-orange);
+}
+.login-brand .brand-name {
+  font-family: var(--cami-font-display);
+  font-size: 36px; font-weight: 700;
+  color: var(--cami-paper);
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
 
-/* ── MODAL USUARIO ── */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;padding:20px;}
-.modal-overlay.show{display:flex;}
-.modal{background:var(--card);border-radius:14px;width:100%;max-width:340px;overflow:hidden;}
-.modal-header{background:#1A1A18;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;}
-.modal-title{font-size:14px;font-weight:700;color:#fff;letter-spacing:.06em;}
-.modal-close{background:none;border:none;color:#888780;font-size:20px;cursor:pointer;line-height:1;}
-.modal-body{padding:20px;}
-.field{margin-bottom:16px;}
-.field label{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:6px;}
-.field input{width:100%;padding:10px 12px;border:0.5px solid var(--border);border-radius:6px;font-family:'Courier New',monospace;font-size:14px;background:var(--bg);color:var(--text);outline:none;}
-.field input:focus{border-color:var(--text);}
-.apps-checkboxes{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.app-check{display:flex;align-items:center;gap:8px;background:var(--bg);border:0.5px solid var(--border);border-radius:6px;padding:8px 10px;cursor:pointer;}
-.app-check input[type=checkbox]{accent-color:#1A1A18;width:14px;height:14px;cursor:pointer;}
-.app-check label{font-size:11px;font-family:'Courier New',monospace;cursor:pointer;letter-spacing:.04em;}
-.modal-footer{padding:16px 20px;border-top:0.5px solid var(--border);display:flex;gap:10px;}
-.btn-cancel{flex:1;padding:12px;background:none;border:0.5px solid var(--border);border-radius:8px;font-family:'Courier New',monospace;font-size:13px;cursor:pointer;color:var(--muted);}
-.btn-save{flex:2;padding:12px;background:#1A1A18;border:none;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;color:#fff;cursor:pointer;font-weight:700;}
-.btn-save:active{background:#333;}
-.modal-error{background:var(--err-bg);color:var(--err);border-radius:6px;padding:8px 12px;font-size:11px;margin-bottom:12px;display:none;}
-.modal-error.show{display:block;}
+.login-body { padding: 36px 32px 32px; }
+.login-label {
+  font-family: var(--cami-font-display);
+  font-size: 10px; font-weight: 600;
+  color: var(--cami-paper-on-navy);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: block;
+}
+
+/* Input nombre */
+#nombre-input {
+  width: 100%;
+  padding: 15px 18px;
+  border: 1px solid rgba(248, 200, 168, 0.22);
+  border-radius: var(--cami-radius);
+  font-family: var(--cami-font-display);
+  font-size: 16px; font-weight: 500;
+  background: rgba(250, 246, 238, 0.08);
+  color: var(--cami-paper);
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+#nombre-input::placeholder { color: rgba(248, 200, 168, 0.45); font-weight: 400; }
+#nombre-input:focus { border-color: var(--cami-orange); background: rgba(250, 246, 238, 0.12); }
+
+#autocomplete-list {
+  display: none;
+  position: absolute;
+  top: 100%; left: 0; right: 0;
+  background: var(--cami-navy-2);
+  border: 1px solid rgba(248, 200, 168, 0.18);
+  border-top: none;
+  border-radius: 0 0 var(--cami-radius) var(--cami-radius);
+  z-index: 50;
+  max-height: 280px;
+  overflow-y: auto;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+.ac-item {
+  padding: 14px 18px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid rgba(248, 200, 168, 0.08);
+  transition: background 0.1s;
+}
+.ac-item:last-child { border-bottom: none; }
+.ac-item:hover, .ac-item.selected { background: rgba(243, 121, 51, 0.18); }
+.ac-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(243, 121, 51, 0.22);
+  color: var(--cami-paper);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--cami-font-display);
+  font-size: 12px; font-weight: 700;
+  flex-shrink: 0;
+}
+.ac-name {
+  font-family: var(--cami-font-display);
+  font-size: 14px; font-weight: 600;
+  color: var(--cami-paper);
+}
+.ac-role {
+  font-family: var(--cami-font-body);
+  font-size: 11px;
+  color: var(--cami-paper-on-navy);
+  margin-top: 2px;
+}
+
+#btn-continuar {
+  display: none;
+  width: 100%;
+  margin-top: 18px;
+  padding: 15px;
+  background: var(--cami-orange);
+  color: #fff;
+  border: none;
+  border-radius: var(--cami-radius);
+  font-family: var(--cami-font-display);
+  font-size: 14px; font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+#btn-continuar:hover { background: var(--cami-orange-mid); }
+#btn-continuar:active { transform: scale(0.985); }
+
+#nombre-error {
+  display: none;
+  background: rgba(232, 72, 63, 0.18);
+  color: #FFB8B0;
+  border: 1px solid rgba(232, 72, 63, 0.4);
+  border-radius: var(--cami-radius-sm);
+  padding: 12px 14px;
+  font-family: var(--cami-font-body);
+  font-size: 12px;
+  margin-top: 14px;
+  text-align: center;
+}
+
+/* ── LOGIN: PIN ─────────────────────────────────────────────────────────── */
+#screen-pin {
+  background: var(--cami-navy-grad);
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px 24px 40px;
+  position: relative;
+  overflow-y: auto;
+}
+.pin-back {
+  background: none; border: none;
+  font-family: var(--cami-font-display);
+  font-size: 11px; font-weight: 600;
+  color: var(--cami-paper-on-navy);
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  align-self: flex-start;
+  padding: 8px 0;
+  transition: color 0.15s;
+}
+.pin-back:hover { color: var(--cami-orange); }
+#screen-pin .login-card { max-width: 380px; margin: 0 auto; }
+.pin-user-name {
+  font-family: var(--cami-font-display);
+  font-size: 18px; font-weight: 600;
+  color: var(--cami-paper);
+  margin-top: 10px;
+}
+.pin-display {
+  display: flex; gap: 12px; justify-content: center;
+  margin-bottom: 28px;
+}
+.pin-dot {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(248, 200, 168, 0.4);
+  background: transparent;
+  transition: all 0.15s;
+}
+.pin-dot.filled {
+  background: var(--cami-orange);
+  border-color: var(--cami-orange);
+}
+
+.numpad-container { position: relative; }
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.num-btn {
+  background: rgba(250, 246, 238, 0.08);
+  border: 1px solid rgba(248, 200, 168, 0.18);
+  border-radius: var(--cami-radius);
+  padding: 18px 8px;
+  font-family: var(--cami-font-display);
+  font-size: 22px; font-weight: 500;
+  color: var(--cami-paper);
+  cursor: pointer;
+  transition: all 0.12s;
+  text-align: center;
+}
+.num-btn:active, .num-btn.pressed {
+  background: var(--cami-orange);
+  color: #fff;
+  border-color: var(--cami-orange);
+  transform: scale(0.96);
+}
+.num-btn.del {
+  font-size: 16px;
+  color: var(--cami-paper-on-navy);
+}
+.num-btn.empty { visibility: hidden; }
+
+.login-error {
+  background: rgba(232, 72, 63, 0.18);
+  color: #FFB8B0;
+  border: 1px solid rgba(232, 72, 63, 0.4);
+  border-radius: var(--cami-radius-sm);
+  padding: 10px 14px;
+  font-family: var(--cami-font-body);
+  font-size: 12px;
+  margin-top: 18px;
+  text-align: center;
+  display: none;
+}
+.login-error.show { display: block; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+.shake { animation: shake 0.4s ease; }
+
+/* ── SPINNER ───────────────────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid rgba(33, 53, 62, 0.15);
+  border-top-color: var(--cami-navy);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.spinner.light {
+  border-color: rgba(248, 200, 168, 0.22);
+  border-top-color: var(--cami-orange);
+}
+.numpad-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(25, 39, 46, 0.92);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+  border-radius: var(--cami-radius);
+  z-index: 10;
+}
+.numpad-overlay.show { display: flex; }
+.numpad-overlay .validating-text {
+  font-family: var(--cami-font-display);
+  font-size: 11px;
+  color: var(--cami-orange);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.users-loading {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px;
+  padding: 22px 0;
+  color: var(--cami-paper-on-navy);
+  font-family: var(--cami-font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.users-loading.hidden { display: none; }
+.users-loading .spinner { width: 18px; height: 18px; border-width: 2px; }
+
+/* ── HOME ──────────────────────────────────────────────────────────────── */
+#screen-home { flex-direction: column; background: var(--cami-paper); }
+
+.topbar {
+  background: var(--cami-navy-grad);
+  color: var(--cami-paper);
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+.topbar::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 6px;
+  background: var(--cami-orange);
+}
+.topbar-left { display: flex; align-items: center; gap: 16px; }
+.brand-logo { height: 44px; width: auto; display: block; flex-shrink: 0; }
+.brand-text {
+  display: flex; flex-direction: column; gap: 4px;
+  line-height: 1;
+}
+.brand-text .cami-eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+}
+.brand-name {
+  font-family: var(--cami-font-display);
+  font-size: 22px; font-weight: 700;
+  color: var(--cami-paper);
+  letter-spacing: -0.005em;
+  line-height: 1;
+}
+.topbar-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+  text-align: right;
+}
+.topbar-user {
+  font-family: var(--cami-font-display);
+  font-size: 9px; font-weight: 600;
+  color: var(--cami-paper-on-navy);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.topbar-role {
+  font-family: var(--cami-font-display);
+  font-size: 13px; font-weight: 600;
+  color: var(--cami-paper);
+  letter-spacing: 0.04em;
+}
+
+.home-body {
+  padding: 28px 24px 16px;
+  flex: 1;
+}
+.home-greeting {
+  font-family: var(--cami-font-body);
+  font-size: 13px;
+  color: var(--cami-ink-soft);
+  margin-bottom: 22px;
+  letter-spacing: 0.02em;
+}
+
+.apps-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+@media (max-width: 720px) {
+  .apps-grid { grid-template-columns: 1fr; }
+  .home-body { padding: 22px 16px 14px; }
+  .topbar { padding: 16px 20px; }
+  .brand-logo { height: 40px; }
+  .brand-name { font-size: 20px; }
+}
+
+.app-card {
+  background: #fff;
+  border: 1px solid var(--cami-rule);
+  border-radius: var(--cami-radius);
+  padding: 16px 18px 16px 21px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.app-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--cami-fusion-grad);
+}
+.app-card:hover {
+  border-color: var(--cami-orange);
+  box-shadow: var(--cami-shadow);
+  transform: translateY(-1px);
+}
+.app-card:active { transform: translateY(0); }
+.app-card.wide { grid-column: 1 / -1; }
+@media (max-width: 720px) {
+  .app-card.wide { grid-column: 1; }
+}
+
+.app-icon {
+  flex-shrink: 0;
+  width: 52px; height: 52px;
+  background: var(--cami-paper);
+  border: 1px solid var(--cami-rule);
+  border-radius: var(--cami-radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--cami-navy);
+}
+.app-icon svg { display: block; }
+
+.app-info { flex: 1; min-width: 0; }
+.app-name {
+  font-family: var(--cami-font-display);
+  font-size: 15px; font-weight: 600;
+  color: var(--cami-navy);
+  margin-bottom: 3px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+.app-desc {
+  font-family: var(--cami-font-body);
+  font-size: 12.5px;
+  color: var(--cami-ink-soft);
+  line-height: 1.45;
+}
+
+.home-actions {
+  display: flex; gap: 10px;
+  margin: 8px 24px 24px;
+}
+@media (max-width: 720px) {
+  .home-actions { margin: 4px 16px 18px; }
+}
+.logout-btn {
+  flex: 1;
+  padding: 13px;
+  background: #fff;
+  border: 1px solid var(--cami-rule);
+  border-radius: var(--cami-radius);
+  font-family: var(--cami-font-display);
+  font-size: 12px; font-weight: 600;
+  color: var(--cami-ink-soft);
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+.logout-btn:hover { border-color: var(--cami-rule-2); color: var(--cami-navy); }
+.logout-btn:active { background: var(--cami-paper-2); }
+.admin-btn {
+  padding: 13px 22px;
+  background: var(--cami-navy);
+  border: none;
+  border-radius: var(--cami-radius);
+  font-family: var(--cami-font-display);
+  font-size: 12px; font-weight: 600;
+  color: var(--cami-paper);
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background 0.15s;
+}
+.admin-btn:hover { background: var(--cami-navy-2); }
+.admin-btn:active { background: var(--cami-navy-deep); }
+
+/* ── ADMIN PANEL ───────────────────────────────────────────────────────── */
+#screen-admin, #screen-calidad { flex-direction: column; background: var(--cami-paper); }
+
+.admin-topbar {
+  background: var(--cami-navy-grad);
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.admin-topbar::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 6px;
+  background: var(--cami-orange);
+}
+.admin-back {
+  background: none; border: none;
+  color: var(--cami-paper-on-navy);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.admin-back:hover { color: var(--cami-orange); }
+.admin-title {
+  font-family: var(--cami-font-display);
+  font-size: 15px; font-weight: 600;
+  color: var(--cami-paper);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.admin-body { padding: 24px; flex: 1; overflow-y: auto; }
+@media (max-width: 720px) {
+  .admin-topbar { padding: 16px 20px; }
+  .admin-body { padding: 18px 16px; }
+}
+
+.admin-section-title {
+  font-family: var(--cami-font-display);
+  font-size: 10px; font-weight: 600;
+  color: var(--cami-ink-soft);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.add-user-btn {
+  background: var(--cami-navy);
+  color: var(--cami-paper);
+  border: none;
+  border-radius: var(--cami-radius-sm);
+  padding: 8px 14px;
+  font-family: var(--cami-font-display);
+  font-size: 11px; font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: background 0.15s;
+}
+.add-user-btn:hover { background: var(--cami-navy-2); }
+
+.user-card {
+  background: #fff;
+  border: 1px solid var(--cami-rule);
+  border-radius: var(--cami-radius);
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+.user-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--cami-fusion-grad);
+}
+.user-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.user-card-name {
+  font-family: var(--cami-font-display);
+  font-size: 15px; font-weight: 600;
+  color: var(--cami-navy);
+}
+.user-card-role {
+  font-family: var(--cami-font-body);
+  font-size: 12px;
+  color: var(--cami-ink-soft);
+  margin-top: 2px;
+}
+.user-apps-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.app-tag {
+  font-family: var(--cami-font-body);
+  font-size: 11px;
+  background: var(--cami-paper);
+  border: 1px solid var(--cami-rule);
+  border-radius: var(--cami-radius-sm);
+  padding: 4px 10px;
+  color: var(--cami-ink-soft);
+  letter-spacing: 0.02em;
+}
+
+.admin-info-box {
+  background: var(--cami-paper-2);
+  border: 1px solid var(--cami-rule);
+  border-radius: var(--cami-radius);
+  padding: 16px 18px;
+  margin-top: 18px;
+  font-family: var(--cami-font-body);
+  font-size: 12px;
+  color: var(--cami-ink-soft);
+  line-height: 1.6;
+}
+.admin-info-box b { color: var(--cami-navy); font-weight: 600; }
+
+/* ── MODAL USUARIO ─────────────────────────────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(25, 39, 46, 0.55);
+  z-index: 100;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: #fff;
+  border-radius: var(--cami-radius-lg);
+  width: 100%;
+  max-width: 380px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+.modal-header {
+  background: var(--cami-navy-grad);
+  padding: 18px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+.modal-header::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 2px;
+  background: var(--cami-fusion-grad-3);
+}
+.modal-title {
+  font-family: var(--cami-font-display);
+  font-size: 14px; font-weight: 600;
+  color: var(--cami-paper);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.modal-close {
+  background: none; border: none;
+  color: var(--cami-paper-on-navy);
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.modal-close:hover { color: var(--cami-orange); }
+.modal-body { padding: 22px; }
+
+.field { margin-bottom: 16px; }
+.field label {
+  font-family: var(--cami-font-display);
+  font-size: 10px; font-weight: 600;
+  color: var(--cami-ink-soft);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+.field input,
+.field select {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--cami-rule);
+  border-radius: var(--cami-radius-sm);
+  font-family: var(--cami-font-body);
+  font-size: 14px;
+  background: #fff;
+  color: var(--cami-ink);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.field input:focus, .field select:focus { border-color: var(--cami-orange); }
+
+.apps-checkboxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.app-check {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--cami-paper);
+  border: 1px solid var(--cami-rule);
+  border-radius: var(--cami-radius-sm);
+  padding: 9px 11px;
+  cursor: pointer;
+}
+.app-check input[type=checkbox] {
+  accent-color: var(--cami-orange);
+  width: 14px; height: 14px;
+  cursor: pointer;
+}
+.app-check label {
+  font-family: var(--cami-font-body);
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--cami-navy);
+}
+
+.modal-footer {
+  padding: 16px 22px;
+  border-top: 1px solid var(--cami-rule);
+  display: flex; gap: 10px;
+  background: var(--cami-paper);
+}
+.btn-cancel {
+  flex: 1;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--cami-rule);
+  border-radius: var(--cami-radius);
+  font-family: var(--cami-font-display);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer;
+  color: var(--cami-ink-soft);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.btn-cancel:hover { border-color: var(--cami-rule-2); color: var(--cami-navy); }
+.btn-save {
+  flex: 2;
+  padding: 12px;
+  background: var(--cami-orange);
+  border: none;
+  border-radius: var(--cami-radius);
+  font-family: var(--cami-font-display);
+  font-size: 12px; font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background 0.15s;
+}
+.btn-save:hover { background: var(--cami-orange-mid); }
+.btn-save:active { background: var(--cami-prima-red); }
+
+.modal-error {
+  background: var(--cami-red-bg);
+  color: var(--cami-red);
+  border: 1px solid #F2C7C3;
+  border-radius: var(--cami-radius-sm);
+  padding: 9px 12px;
+  font-family: var(--cami-font-body);
+  font-size: 12px;
+  margin-bottom: 14px;
+  display: none;
+}
+.modal-error.show { display: block; }
 </style>
 </head>
-<body>
+<body class="cami-themed">
 
 <!-- PANTALLA 1: INGRESO DE NOMBRE CON AUTOCOMPLETADO -->
 <div id="screen-users" class="screen active">
   <div class="login-card">
     <div class="login-header">
-      <span class="logo-text">CAMI</span>
-      <span class="app-name">Sistema de Control</span>
+      <div class="login-brand">
+        <img src="logo.svg" alt="CAMI"/>
+        <span class="cami-eyebrow">Sistema de Control de Producción</span>
+        <span class="brand-name">CAMI</span>
+      </div>
     </div>
     <div class="login-body">
       <span class="login-label">Ingresa tu nombre</span>
@@ -142,22 +782,17 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
         <input type="text" id="nombre-input"
           placeholder="Escribe tu nombre..."
           autocomplete="off"
-          style="width:100%;padding:16px 18px;border:1px solid rgba(255,255,255,.2);border-radius:10px;font-family:'Courier New',monospace;font-size:16px;background:rgba(255,255,255,.08);color:#fff;outline:none;transition:border .15s;" onfocus="this.style.borderColor='rgba(255,255,255,.5)'" onblur="this.style.borderColor='rgba(255,255,255,.2)'"
           oninput="filtrarUsuarios(this.value)"
           onkeydown="handleNombreKey(event)"
         />
-        <div id="autocomplete-list" style="display:none;position:absolute;top:100%;left:0;right:0;background:#2a2a28;border:1px solid rgba(255,255,255,.15);border-top:none;border-radius:0 0 10px 10px;z-index:50;max-height:260px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4)"></div>
+        <div id="autocomplete-list"></div>
       </div>
       <div class="users-loading hidden" id="users-loading">
         <div class="spinner light"></div>
         <span>Conectando...</span>
       </div>
-      <button id="btn-continuar"
-        onclick="confirmarNombre()"
-        style="display:none;width:100%;margin-top:16px;padding:16px;background:#fff;color:#1A1A18;border:none;border-radius:10px;font-family:'Courier New',monospace;font-size:15px;font-weight:900;cursor:pointer;letter-spacing:.08em;transition:opacity .15s;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">
-        Continuar &#8594;
-      </button>
-      <div id="nombre-error" style="display:none;background:rgba(163,45,45,.25);color:#ff9494;border:1px solid rgba(163,45,45,.4);border-radius:8px;padding:12px 14px;font-size:12px;margin-top:14px;text-align:center"></div>
+      <button id="btn-continuar" onclick="confirmarNombre()">Continuar &#8594;</button>
+      <div id="nombre-error"></div>
     </div>
   </div>
 </div>
@@ -167,8 +802,11 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
   <button class="pin-back" onclick="backToUsers()">&#8592; Cambiar usuario</button>
   <div class="login-card">
     <div class="login-header">
-      <span class="logo-text">CAMI</span>
-      <div class="pin-user-name" id="pin-user-name" style="color:#fff;margin-top:8px;font-size:16px;"></div>
+      <div class="login-brand">
+        <img src="logo.svg" alt="CAMI"/>
+        <span class="cami-eyebrow">Sistema de Control de Producción</span>
+        <div class="pin-user-name" id="pin-user-name"></div>
+      </div>
     </div>
     <div class="login-body">
       <span class="login-label">Ingresa tu PIN</span>
@@ -196,7 +834,7 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
           <button class="num-btn del" data-key="del" onclick="delDigit()">&#9003;</button>
         </div>
         <div class="numpad-overlay" id="numpad-overlay">
-          <div class="spinner"></div>
+          <div class="spinner light"></div>
           <div class="validating-text">Validando...</div>
         </div>
       </div>
@@ -208,18 +846,24 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
 <!-- PANTALLA 3: HOME -->
 <div id="screen-home" class="screen">
   <div class="topbar">
-    <span class="logo-text">CAMI</span>
+    <div class="topbar-left">
+      <img src="logo.svg" alt="CAMI" class="brand-logo"/>
+      <div class="brand-text">
+        <span class="cami-eyebrow">Sistema de Control de Producción</span>
+        <span class="brand-name">CAMI</span>
+      </div>
+    </div>
     <div class="topbar-right">
-      <div class="topbar-user" id="topbar-user">Usuario</div>
-      <div class="topbar-role" id="topbar-role">Rol</div>
+      <span class="topbar-user" id="topbar-user">Usuario</span>
+      <span class="topbar-role" id="topbar-role">Rol</span>
     </div>
   </div>
   <div class="home-body">
-    <div class="home-greeting" id="home-greeting">Selecciona un modulo</div>
+    <div class="home-greeting" id="home-greeting">Selecciona un módulo</div>
     <div class="apps-grid" id="apps-grid"></div>
   </div>
   <div class="home-actions">
-    <button class="logout-btn" onclick="logout()">Cerrar sesion</button>
+    <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
     <button class="admin-btn" id="admin-btn" onclick="showAdmin()" style="display:none">&#9881; Admin</button>
   </div>
 </div>
@@ -228,11 +872,11 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
 <div id="screen-admin" class="screen">
   <div class="admin-topbar">
     <button class="admin-back" onclick="closeAdmin()">&#8592;</button>
-    <span class="admin-title">PANEL DE ADMINISTRADOR</span>
+    <span class="admin-title">Panel de Administrador</span>
   </div>
   <div class="admin-body">
     <div class="admin-section-title">
-      <span>USUARIOS DEL SISTEMA</span>
+      <span>Usuarios del sistema</span>
       <button class="add-user-btn" onclick="openModal()">+ Nuevo usuario</button>
     </div>
     <div id="users-list"></div>
@@ -243,10 +887,10 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
 <div id="screen-calidad" class="screen">
   <div class="admin-topbar">
     <button class="admin-back" onclick="closeCalidad()">&#8592;</button>
-    <span class="admin-title">CONTROL DE CALIDAD</span>
+    <span class="admin-title">Control de Calidad</span>
   </div>
   <div class="home-body">
-    <div class="home-greeting">Selecciona un proceso de inspeccion</div>
+    <div class="home-greeting">Selecciona un proceso de inspección</div>
     <div class="apps-grid" id="calidad-list"></div>
   </div>
 </div>
@@ -255,15 +899,15 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
     <div class="modal-header">
-      <span class="modal-title" id="modal-title">NUEVO USUARIO</span>
+      <span class="modal-title" id="modal-title">Nuevo usuario</span>
       <button class="modal-close" onclick="closeModal()">&#215;</button>
     </div>
     <div class="modal-body">
       <div class="modal-error" id="modal-error"></div>
       <div class="field"><label>Nombre completo</label><input type="text" id="f-nombre" placeholder="Ej: Juan Garcia" autocomplete="off"/></div>
       <div class="field"><label>PIN (6 digitos)</label><input type="password" id="f-pin" placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;" maxlength="6" inputmode="numeric" autocomplete="off"/></div>
-      <div class="field"><label>Rol</label><select id="f-rol" style="width:100%;padding:10px 12px;border:0.5px solid var(--border);border-radius:6px;font-family:'Courier New',monospace;font-size:13px;background:var(--bg);color:var(--text);outline:none;"><option value="Administrador">Administrador</option><option value="Supervisor">Supervisor</option><option value="Almacenista">Almacenista</option><option value="Invitado">Invitado</option></select></div>
-      <div class="field"><label>Acceso a modulos</label><div class="apps-checkboxes" id="apps-checkboxes"></div></div>
+      <div class="field"><label>Rol</label><select id="f-rol"><option value="Administrador">Administrador</option><option value="Supervisor">Supervisor</option><option value="Almacenista">Almacenista</option><option value="Invitado">Invitado</option></select></div>
+      <div class="field"><label>Acceso a módulos</label><div class="apps-checkboxes" id="apps-checkboxes"></div></div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
@@ -274,16 +918,52 @@ body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);
 
 <script>
 const AS = 'https://script.google.com/macros/s/AKfycbw8Ucc9J3_TQcsAR0tn2Lk5DBN2bPWG6HF2pm3GfoEwa2NlRFQn5qZPVj7gy-IaLBSg/exec';
+
+// ── Iconos Tabler inline (24x24, stroke 1.75, currentColor) ─────────────
+// Hereda color del padre (.app-icon { color: var(--cami-navy) }).
+const ICO_BASE = 'xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"';
+const ICONS = {
+  // clipboard-list
+  ot: '<svg ' + ICO_BASE + '><path d="M9 5H7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2V7a2 2 0 0 0 -2 -2h-2"/><path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>',
+  // camera
+  reportes: '<svg ' + ICO_BASE + '><path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2"/><path d="M9 13a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/></svg>',
+  // building-warehouse
+  almacen: '<svg ' + ICO_BASE + '><path d="M3 21v-13l9 -4l9 4v13"/><path d="M13 13h4v8h-10v-6h6"/><path d="M13 21v-9a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v3"/></svg>',
+  // tool
+  prestamo: '<svg ' + ICO_BASE + '><path d="M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5"/></svg>',
+  // credit-card
+  requisicion: '<svg ' + ICO_BASE + '><path d="M3 5m0 3a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3z"/><path d="M3 10l18 0"/><path d="M7 15l.01 0"/><path d="M11 15l2 0"/></svg>',
+  // file-invoice
+  presupuesto: '<svg ' + ICO_BASE + '><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 7l1 0"/><path d="M9 13l6 0"/><path d="M13 17l2 0"/></svg>',
+  // cash
+  nomina: '<svg ' + ICO_BASE + '><path d="M7 9m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"/><path d="M14 14m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 9v-2a2 2 0 0 0 -2 -2h-10a2 2 0 0 0 -2 2v6a2 2 0 0 0 2 2h2"/></svg>',
+  // checklist
+  calidad: '<svg ' + ICO_BASE + '><path d="M9.615 20h-2.615a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6.5"/><path d="M14 19l2 2l4 -4"/><path d="M9 8h4"/><path d="M9 12h2"/></svg>',
+  // chart-bar
+  procesos: '<svg ' + ICO_BASE + '><path d="M3 12m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"/><path d="M9 8m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"/><path d="M15 4m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"/><path d="M4 20l14 0"/></svg>',
+  // ── Calidad submenu icons ──
+  // package
+  recepcion: '<svg ' + ICO_BASE + '><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5"/><path d="M12 12l8 -4.5"/><path d="M12 12l0 9"/><path d="M12 12l-8 -4.5"/></svg>',
+  // ruler-2
+  habilitado: '<svg ' + ICO_BASE + '><path d="M17 3l4 4l-14 14l-4 -4z"/><path d="M16 7l-1.5 1.5"/><path d="M13 10l-1.5 1.5"/><path d="M10 13l-1.5 1.5"/><path d="M7 16l-1.5 1.5"/></svg>',
+  // settings
+  ensamble: '<svg ' + ICO_BASE + '><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/></svg>',
+  // droplet
+  penetrantes: '<svg ' + ICO_BASE + '><path d="M6.8 11a6 6 0 1 0 12 0c0 -4 -6 -10.8 -6 -10.8s-6 6.8 -6 10.8"/></svg>',
+  // brush
+  superficies: '<svg ' + ICO_BASE + '><path d="M3 21v-4a4 4 0 1 1 4 4h-4"/><path d="M21 3a16 16 0 0 0 -12.8 10.2"/><path d="M21 3a16 16 0 0 1 -10.2 12.8"/><path d="M10.6 9a9 9 0 0 1 4.4 4.4"/></svg>'
+};
+
 const APPS = {
-  ot:          { icon:'&#127981;', name:'Ordenes de Trabajo',   desc:'Registro y seguimiento de OT', url:'https://alfredoaguado-arch.github.io/cami-ot/', wide:false },
-  reportes:    { icon:'&#128247;', name:'Reportes fotograficos', desc:'Documenta el trabajo con fotos y PDF', url:'https://alfredoaguado-arch.github.io/cami-reportes/', wide:false },
-  almacen:     { icon:'&#128230;', name:'Almacen',              desc:'Materiales, herramienta y consumibles', url:'https://alfredoaguado-arch.github.io/cami-almacen/', wide:false },
-  prestamo:    { icon:'&#128295;', name:'Prestamo herramienta', desc:'Solicita herramienta del almacen', url:'https://alfredoaguado-arch.github.io/cami-almacen/?modo=prestamo', wide:true },
-  requisicion: { icon:'&#128179;', name:'Requisicion de pago',  desc:'Solicita pagos y transferencias', url:'https://alfredoaguado-arch.github.io/cami-requisicion/', wide:false },
-  presupuesto: { icon:'&#128203;', name:'Presupuesto',          desc:'Genera cotizaciones en PDF', url:'https://alfredoaguado-arch.github.io/cami-presupuesto/', wide:false },
-  nomina:      { icon:'&#128176;', name:'Nomina',               desc:'Captura, aprobacion y dispersion quincenal', url:'https://alfredoaguado-arch.github.io/cami-nomina/', wide:false },
-  calidad:     { icon:'&#9989;',   name:'Control de Calidad',   desc:'Inspeccion QC por proceso', url:'https://alfredoaguado-arch.github.io/cami-calidad/', wide:false },
-  procesos:    { icon:'&#128202;', name:'Procesos',             desc:'Sabana de seguimiento de produccion', url:'https://alfredoaguado-arch.github.io/cami-procesos/', wide:false },
+  ot:          { icon: ICONS.ot,          name:'Órdenes de Trabajo',    desc:'Registro y seguimiento de OT',              url:'https://alfredoaguado-arch.github.io/cami-ot/',           wide:false },
+  reportes:    { icon: ICONS.reportes,    name:'Reportes fotográficos', desc:'Documenta el trabajo con fotos y PDF',      url:'https://alfredoaguado-arch.github.io/cami-reportes/',     wide:false },
+  almacen:     { icon: ICONS.almacen,     name:'Almacén',               desc:'Materiales, herramienta y consumibles',     url:'https://alfredoaguado-arch.github.io/cami-almacen/',      wide:false },
+  prestamo:    { icon: ICONS.prestamo,    name:'Préstamo herramienta',  desc:'Solicita herramienta del almacén',          url:'https://alfredoaguado-arch.github.io/cami-almacen/?modo=prestamo', wide:true },
+  requisicion: { icon: ICONS.requisicion, name:'Requisición de pago',   desc:'Solicita pagos y transferencias',           url:'https://alfredoaguado-arch.github.io/cami-requisicion/',  wide:false },
+  presupuesto: { icon: ICONS.presupuesto, name:'Presupuesto',           desc:'Genera cotizaciones en PDF',                url:'https://alfredoaguado-arch.github.io/cami-presupuesto/',  wide:false },
+  nomina:      { icon: ICONS.nomina,      name:'Nómina',                desc:'Captura, aprobación y dispersión quincenal',url:'https://alfredoaguado-arch.github.io/cami-nomina/',       wide:false },
+  calidad:     { icon: ICONS.calidad,     name:'Control de Calidad',    desc:'Inspección QC por proceso',                 url:'https://alfredoaguado-arch.github.io/cami-calidad/',      wide:false },
+  procesos:    { icon: ICONS.procesos,    name:'Procesos',              desc:'Sábana de seguimiento de producción',       url:'https://alfredoaguado-arch.github.io/cami-procesos/',     wide:false },
 };
 
 let userList = [];
@@ -511,18 +1191,24 @@ function entrarHome(data) {
   const grid = document.getElementById('apps-grid'); grid.innerHTML='';
   (data.apps||[]).forEach(appId=>{
     const app=APPS[appId]; if(!app) return;
+    const inner =
+      '<div class="app-icon">'+app.icon+'</div>' +
+      '<div class="app-info">' +
+        '<div class="app-name">'+app.name+'</div>' +
+        '<div class="app-desc">'+app.desc+'</div>' +
+      '</div>';
     // Calidad: en vez de link directo, abre una vista con el submenu de procesos
     if (appId==='calidad') {
       const c=document.createElement('div');
       c.className='app-card'+(app.wide?' wide':'');
       c.onclick=openCalidad;
-      c.innerHTML='<span class="app-icon">'+app.icon+'</span><div class="app-name">'+app.name+'</div><div class="app-desc">'+app.desc+'</div>';
+      c.innerHTML=inner;
       grid.appendChild(c);
       return;
     }
     const a=document.createElement('a'); a.href=app.url;
     a.className='app-card'+(app.wide?' wide':'');
-    a.innerHTML='<span class="app-icon">'+app.icon+'</span><div class="app-name">'+app.name+'</div><div class="app-desc">'+app.desc+'</div>';
+    a.innerHTML=inner;
     grid.appendChild(a);
   });
   document.getElementById('admin-btn').style.display = data.rol==='Administrador'?'block':'none';
@@ -545,11 +1231,11 @@ function logout() {
 // (sessionStorage.cami_session) persiste al abrir cualquiera de estos.
 const CALIDAD_BASE = 'https://alfredoaguado-arch.github.io/cami-calidad/';
 const CALIDAD_PROCESOS = [
-  { icon:'&#128229;', name:'Recepcion de material', desc:'QC-02 &middot; Inspeccion de MP',        proceso:'qc-02'  },
-  { icon:'&#128207;', name:'Habilitado',             desc:'QC-03 &middot; Inspeccion dimensional',   proceso:'qc-03'  },
-  { icon:'&#128736;', name:'Ensamble',               desc:'QC-04 &middot; Inspeccion de ensamble',   proceso:'qc-04'  },
-  { icon:'&#128300;', name:'Penetrantes (PT)',       desc:'QC-05B &middot; Ensayo no destructivo',   proceso:'qc-05b' },
-  { icon:'&#127912;', name:'Preparacion superficies', desc:'QC-06 &middot; Inspeccion de superficie', proceso:'qc-06'  },
+  { icon: ICONS.recepcion,   name:'Recepción de material',  desc:'QC-02 &middot; Inspección de MP',         proceso:'qc-02'  },
+  { icon: ICONS.habilitado,  name:'Habilitado',              desc:'QC-03 &middot; Inspección dimensional',   proceso:'qc-03'  },
+  { icon: ICONS.ensamble,    name:'Ensamble',                desc:'QC-04 &middot; Inspección de ensamble',   proceso:'qc-04'  },
+  { icon: ICONS.penetrantes, name:'Penetrantes (PT)',        desc:'QC-05B &middot; Ensayo no destructivo',   proceso:'qc-05b' },
+  { icon: ICONS.superficies, name:'Preparación superficies', desc:'QC-06 &middot; Inspección de superficie', proceso:'qc-06'  },
 ];
 
 function renderCalidad() {
@@ -558,7 +1244,12 @@ function renderCalidad() {
     const a=document.createElement('a');
     a.href=CALIDAD_BASE+'?proceso='+p.proceso;
     a.className='app-card';
-    a.innerHTML='<span class="app-icon">'+p.icon+'</span><div class="app-name">'+p.name+'</div><div class="app-desc">'+p.desc+'</div>';
+    a.innerHTML =
+      '<div class="app-icon">'+p.icon+'</div>' +
+      '<div class="app-info">' +
+        '<div class="app-name">'+p.name+'</div>' +
+        '<div class="app-desc">'+p.desc+'</div>' +
+      '</div>';
     list.appendChild(a);
   });
 }
@@ -572,7 +1263,7 @@ function closeAdmin() { showScreen('screen-home'); }
 function renderAdminList() {
   const list=document.getElementById('users-list'); list.innerHTML='';
   if (!userList.length) {
-    list.innerHTML='<div style="color:var(--muted);font-size:12px;padding:16px;text-align:center">No hay usuarios registrados.</div>';
+    list.innerHTML='<div style="color:var(--cami-ink-soft);font-family:var(--cami-font-body);font-size:13px;padding:20px;text-align:center">No hay usuarios registrados.</div>';
     return;
   }
   userList.forEach(u=>{
@@ -582,8 +1273,8 @@ function renderAdminList() {
     list.appendChild(card);
   });
   const info=document.createElement('div');
-  info.style.cssText='background:#f5f3ee;border:0.5px solid #d3d1c7;border-radius:8px;padding:14px;margin-top:16px;font-size:11px;color:#888780;line-height:1.7;';
-  info.innerHTML='&#128274; Gestiona usuarios y PINs en:<br><b>Google Sheet &rarr; CAMI-Usuarios</b><br>Solo el administrador tiene acceso.';
+  info.className='admin-info-box';
+  info.innerHTML='&#128274; Gestiona usuarios y PINs en:<br><b>Google Sheet &rarr; CAMI-Usuarios</b><br>Solo el administrador tiene acceso directo a la base.';
   list.appendChild(info);
 }
 
