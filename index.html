@@ -1188,7 +1188,29 @@ async function tryLogin() {
 }
 
 // ── HOME ──────────────────────────────────────────────────────
+// QR routing: si veníamos del QR de un módulo (ej. cierre de OT) y el módulo
+// nos redirigió aquí para login, ahora que la sesión está activa volvemos
+// directo al módulo en vez de mostrar el hub. cami_pending_hash lo escribe
+// el módulo origen (cami-ot ARREGLO 1A) en localStorage del mismo origen.
+// Esto cubre el flow degradado (PWA fuera de scope o browser desktop); en la
+// PWA standalone con scope amplio, el QR ya abre directo en el módulo sin
+// pasar por aquí.
+function redirigirAlDestinoPendiente() {
+  try {
+    const pending = localStorage.getItem('cami_pending_hash');
+    if (!pending) return false;
+    // Por ahora solo cami-ot genera QRs con hash. Mapping por prefijo.
+    if (/^#cerrar\//.test(pending)) {
+      localStorage.removeItem('cami_pending_hash');
+      window.location.href = 'https://alfredoaguado-arch.github.io/cami-ot/' + pending;
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
 function entrarHome(data) {
+  if (redirigirAlDestinoPendiente()) return;
   document.getElementById('topbar-user').textContent = data.nombre;
   document.getElementById('topbar-role').textContent = data.rol;
   document.getElementById('home-greeting').textContent = 'Bienvenido, '+data.nombre;
